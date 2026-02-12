@@ -666,10 +666,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b50edbac58b548668d481bdb584a838, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  checkInterval: 0.1
-  interactableLayer:
-    serializedVersion: 2
-    m_Bits: 64
 --- !u!1 &687441293
 GameObject:
   m_ObjectHideFlags: 0
@@ -1377,7 +1373,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f1eafb562e7a4265a87a9515ed5af01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pauseButton: {fileID: 1422792485}
 --- !u!1001 &6153669329204443422
 PrefabInstance:
   m_ObjectHideFlags: 0
