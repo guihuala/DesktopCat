@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using DesktopPet.Events;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -117,12 +118,20 @@ namespace DesktopPet
             clickThrough = newClickThrough;
             allowDrag = newAllowDrag;
             ApplyWindowSettings();
+            PublishWindowSettingsChanged();
         }
 
         public void SetClickThrough(bool enabled)
         {
+            if (clickThrough == enabled)
+            {
+                return;
+            }
+
             clickThrough = enabled;
             ApplyWindowStyles();
+            GameEventBus.Publish(new WindowClickThroughChangedEvent(clickThrough));
+            PublishWindowSettingsChanged();
         }
 
         public void ToggleClickThrough()
@@ -132,29 +141,55 @@ namespace DesktopPet
 
         public void SetAlwaysOnTop(bool enabled)
         {
+            if (alwaysOnTop == enabled)
+            {
+                return;
+            }
+
             alwaysOnTop = enabled;
             ApplyWindowStyles();
+            GameEventBus.Publish(new WindowAlwaysOnTopChangedEvent(alwaysOnTop));
+            PublishWindowSettingsChanged();
         }
 
         public void SetBorderless(bool enabled)
         {
+            if (borderless == enabled)
+            {
+                return;
+            }
+
             borderless = enabled;
             ApplyWindowStyles();
+            PublishWindowSettingsChanged();
         }
 
         public void SetTransparentBackground(bool enabled)
         {
+            if (transparentBackground == enabled)
+            {
+                return;
+            }
+
             transparentBackground = enabled;
             ApplyWindowSettings();
+            PublishWindowSettingsChanged();
         }
 
         public void SetAllowDrag(bool enabled)
         {
+            if (allowDrag == enabled)
+            {
+                return;
+            }
+
             allowDrag = enabled;
             if (!allowDrag)
             {
                 isDragging = false;
             }
+
+            PublishWindowSettingsChanged();
         }
 
         public void CenterOnScreen()
@@ -222,6 +257,7 @@ namespace DesktopPet
             isDragging = true;
             dragMouseStart = GetCursorPosition();
             dragWindowStart = rect;
+            GameEventBus.Publish(new WindowDragStateChangedEvent(true));
 #endif
         }
 
@@ -238,6 +274,7 @@ namespace DesktopPet
             }
 
             isDragging = false;
+            GameEventBus.Publish(new WindowDragStateChangedEvent(false));
         }
 
         public void ApplyWindowSettings()
@@ -455,7 +492,18 @@ namespace DesktopPet
                 0,
                 0,
                 SWP_NOSIZE);
+            GameEventBus.Publish(new WindowMovedEvent(new Vector2Int(x, y)));
 #endif
+        }
+
+        private void PublishWindowSettingsChanged()
+        {
+            GameEventBus.Publish(new WindowSettingsChangedEvent(
+                alwaysOnTop,
+                borderless,
+                transparentBackground,
+                clickThrough,
+                allowDrag));
         }
 
         private static RectInt GetVirtualScreenRect()

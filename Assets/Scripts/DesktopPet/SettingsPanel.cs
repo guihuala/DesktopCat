@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
+using DesktopPet.Events;
 
 namespace DesktopPet
 {
@@ -12,6 +14,7 @@ namespace DesktopPet
 
         private Transform petRoot;
         private float defaultScale;
+        private IDisposable petScaleSubscription;
 
         public void Initialize(Transform targetPetRoot, float minScale, float maxScale, float initialScale, float resetScale)
         {
@@ -40,7 +43,15 @@ namespace DesktopPet
                 resetButton.onClick.AddListener(ResetScale);
             }
 
+            petScaleSubscription?.Dispose();
+            petScaleSubscription = GameEventBus.Subscribe<PetScaleChangedEvent>(OnExternalPetScaleChanged);
             SetPetScale(initialScale);
+        }
+
+        private void OnDestroy()
+        {
+            petScaleSubscription?.Dispose();
+            petScaleSubscription = null;
         }
 
         private void ResetScale()
@@ -65,6 +76,21 @@ namespace DesktopPet
             if (scaleValueText != null)
             {
                 scaleValueText.text = $"{value:0.00}x";
+            }
+
+            GameEventBus.Publish(new PetScaleChangedEvent(value));
+        }
+
+        private void OnExternalPetScaleChanged(PetScaleChangedEvent gameEvent)
+        {
+            if (scaleSlider != null && !Mathf.Approximately(scaleSlider.value, gameEvent.Scale))
+            {
+                scaleSlider.SetValueWithoutNotify(gameEvent.Scale);
+            }
+
+            if (scaleValueText != null)
+            {
+                scaleValueText.text = $"{gameEvent.Scale:0.00}x";
             }
         }
     }

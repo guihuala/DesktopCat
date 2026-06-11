@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using DesktopPet.Events;
 
 namespace DesktopPet
 {
@@ -117,6 +118,7 @@ namespace DesktopPet
             panel.Open();
             TrackOpenPanel(panel);
             RefreshWindowInputMode();
+            GameEventBus.Publish(new PanelOpenedEvent(panelId));
         }
 
         public void ClosePanel(string panelId)
@@ -129,6 +131,7 @@ namespace DesktopPet
             panel.Close();
             openStack.Remove(panel);
             RefreshWindowInputMode();
+            GameEventBus.Publish(new PanelClosedEvent(panelId));
         }
 
         public void TogglePanel(string panelId)
@@ -151,9 +154,19 @@ namespace DesktopPet
 
         public void CloseAllPanels()
         {
-            foreach (var panel in panels.Values)
+            foreach (var entry in panels)
             {
-                panel.Close();
+                var panel = entry.Value;
+                var wasOpen = panel != null && panel.IsOpen;
+                if (panel != null)
+                {
+                    panel.Close();
+                }
+
+                if (wasOpen)
+                {
+                    GameEventBus.Publish(new PanelClosedEvent(entry.Key));
+                }
             }
 
             openStack.Clear();
@@ -227,6 +240,7 @@ namespace DesktopPet
                     panel.Close();
                     openStack.RemoveAt(i);
                     RefreshWindowInputMode();
+                    GameEventBus.Publish(new PanelClosedEvent(panelIds[panel]));
                     return;
                 }
             }
