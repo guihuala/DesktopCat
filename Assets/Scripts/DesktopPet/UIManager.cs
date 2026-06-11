@@ -208,7 +208,14 @@ namespace DesktopPet
 
             var initialScale = petRoot != null ? petRoot.localScale.x : defaultPetScale;
             settingsPanel = Instantiate(settingsPanelPrefab, panelRoot, false);
-            settingsPanel.Initialize(petRoot, minPetScale, maxPetScale, initialScale, defaultPetScale);
+            settingsPanel.Initialize(
+                petRoot,
+                windowController,
+                minPetScale,
+                maxPetScale,
+                initialScale,
+                defaultPetScale,
+                ToggleSettingsPanel);
             RegisterPanel("settings", settingsPanel);
         }
 
