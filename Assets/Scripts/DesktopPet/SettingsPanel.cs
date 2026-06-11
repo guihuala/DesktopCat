@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace DesktopPet
 {
-    public class DesktopPetSettingsPanelView : MonoBehaviour
+    public class SettingsPanel : UIPanel
     {
         [SerializeField] private Slider scaleSlider;
         [SerializeField] private Text scaleValueText;
@@ -41,21 +41,6 @@ namespace DesktopPet
             }
 
             SetPetScale(initialScale);
-        }
-
-        public void Open()
-        {
-            gameObject.SetActive(true);
-        }
-
-        public void Close()
-        {
-            gameObject.SetActive(false);
-        }
-
-        public void Toggle()
-        {
-            gameObject.SetActive(!gameObject.activeSelf);
         }
 
         private void ResetScale()

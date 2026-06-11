@@ -94,6 +94,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1a59ec1d2a64b10bd655272f86658fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  panelId: settings
+  closeOthersWhenOpened: 1
+  blockClickThrough: 1
+  hotkey: 0
   scaleSlider: {fileID: 100054}
   scaleValueText: {fileID: 100043}
   closeButton: {fileID: 100024}

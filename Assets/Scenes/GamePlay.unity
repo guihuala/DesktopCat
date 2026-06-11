@@ -1184,13 +1184,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canvas: {fileID: 0}
+  panelRoot: {fileID: 0}
+  windowController: {fileID: 0}
   petRoot: {fileID: 0}
   petRootName: Monkey
   minPetScale: 0.25
   maxPetScale: 1.25
   defaultPetScale: 0.55
   applyDefaultScaleOnStart: 1
+  panelPrefabs: []
   settingsPanelPrefab: {fileID: 100004, guid: 11806c2bcf154ab5b8f1d91afcc43ef2, type: 3}
+  closeTopPanelKey: 27
 --- !u!1 &2200000001
 GameObject:
   m_ObjectHideFlags: 0
@@ -1314,7 +1318,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2100000004}
-        m_TargetAssemblyTypeName: DesktopPet.DesktopPetPanelManager, Assembly-CSharp
+        m_TargetAssemblyTypeName: DesktopPet.UIManager, Assembly-CSharp
         m_MethodName: ToggleSettingsPanel
         m_Mode: 1
         m_Arguments:
