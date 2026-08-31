@@ -10,6 +10,7 @@ namespace DesktopPet.Save
         public PetSettingsData pet = new PetSettingsData();
         public AudioSettingsData audio = new AudioSettingsData();
         public PrivacySettingsData privacy = new PrivacySettingsData();
+        public AppearanceSettingsData appearance = new AppearanceSettingsData();
     }
 
     [Serializable]
@@ -42,5 +43,11 @@ namespace DesktopPet.Save
     public class PrivacySettingsData
     {
         public bool microphoneEnabled;
+    }
+
+    [Serializable]
+    public class AppearanceSettingsData
+    {
+        public int dayNightMode;
     }
 }

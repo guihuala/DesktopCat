@@ -29,6 +29,7 @@ namespace DesktopPet.Config
         [Min(0.01f)] public float arrivalDistance = 0.08f;
         [Min(0.1f)] public float movementTimeout = 12f;
         [Min(0f)] public float wanderRadius = 1.5f;
+        [Range(0f, 0.2f)] public float screenSafeMargin = 0.04f;
 
         [Header("Interaction")]
         [Min(0f)] public float clickCooldown = 0.75f;
@@ -37,7 +38,7 @@ namespace DesktopPet.Config
         [Range(0f, 1f)] public float callResponseChance = 0.75f;
         [Range(0f, 1f)] public float sleepingCallResponseChance = 0.1f;
         [Min(0f)] public float approachCooldown = 30f;
-        [Min(0f)] public float activeApproachBonus = 0.65f;
+        [Min(0f)] public float activeApproachBonus = 1.25f;
         [Min(0f)] public float normalApproachBonus = 0.15f;
 
         public static PetTuningConfig CreateRuntimeDefaults()

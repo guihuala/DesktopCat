@@ -134,4 +134,10 @@ namespace DesktopPet.Events
         public readonly string Level;
         public PlayerActivityChangedEvent(string level) { Level = level; }
     }
+
+    public readonly struct DayNightModeChangedEvent : IGameEvent
+    {
+        public readonly int Mode;
+        public DayNightModeChangedEvent(int mode) { Mode = mode; }
+    }
 }

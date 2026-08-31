@@ -12,12 +12,16 @@ namespace DesktopPet.Pet.Interaction
         private PetTuningConfig tuning;
         private WindowController windowController;
         private float nextClickTime;
+        private AudioSource audioSource;
+        private AudioClip callClip;
 
         public void Initialize(PetBehaviorBrain targetBrain, PetTuningConfig config)
         {
             brain = targetBrain;
             tuning = config;
             windowController = FindObjectOfType<WindowController>();
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
             EnsureCollider();
         }
 
@@ -36,7 +40,25 @@ namespace DesktopPet.Pet.Interaction
         }
 
         public void RequestFeed() { brain.RequestFeed(); GameEventBus.Publish(new PetFeedbackEvent("食物准备好了", false)); }
-        public void RequestCall() => brain.RequestCall(false);
+        public void RequestCall() { PlayCallSound(); brain.RequestCall(false); }
+
+        private void PlayCallSound()
+        {
+            if (callClip == null)
+            {
+                const int sampleRate = 22050;
+                const int sampleCount = 3307;
+                var samples = new float[sampleCount];
+                for (var i = 0; i < sampleCount; i++)
+                {
+                    var envelope = 1f - i / (float)sampleCount;
+                    samples[i] = Mathf.Sin(2f * Mathf.PI * 660f * i / sampleRate) * envelope * 0.15f;
+                }
+                callClip = AudioClip.Create("DefaultPetCall", sampleCount, 1, sampleRate, false);
+                callClip.SetData(samples, 0);
+            }
+            audioSource.PlayOneShot(callClip);
+        }
 
         private void EnsureCollider()
         {

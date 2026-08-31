@@ -5,7 +5,7 @@ using DesktopPet.Pet.Presentation;
 using DesktopPet.Pet.State;
 using UnityEngine;
 using DesktopPet.Events;
-using DesktopPet.Input;
+using DesktopPet.Activity;
 
 namespace DesktopPet.Pet.Behavior
 {

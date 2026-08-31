@@ -12,12 +12,18 @@ namespace DesktopPet.Pet.Movement
         private PetTuningConfig tuning;
         private Vector3 target;
         private float deadline;
+        private Renderer[] petRenderers;
 
         public bool IsMoving { get; private set; }
         public Vector3 Target => target;
         public Transform BedPoint => bedPoint;
 
-        public void Initialize(PetTuningConfig config) => tuning = config;
+        public void Initialize(PetTuningConfig config)
+        {
+            tuning = config;
+            petRenderers = GetComponentsInChildren<Renderer>();
+            KeepPetInsideCamera();
+        }
 
         public bool MoveToRandomPoint()
         {
@@ -51,6 +57,7 @@ namespace DesktopPet.Pet.Movement
         {
             target = worldPosition;
             target.y = transform.position.y;
+            target = ConstrainToCamera(target);
             deadline = Time.time + tuning.movementTimeout;
             IsMoving = true;
             return true;
@@ -60,7 +67,9 @@ namespace DesktopPet.Pet.Movement
 
         private void Update()
         {
-            if (!IsMoving || tuning == null) return;
+            if (tuning == null) return;
+            KeepPetInsideCamera();
+            if (!IsMoving) return;
             var delta = target - transform.position;
             delta.y = 0f;
             if (delta.magnitude <= tuning.arrivalDistance || Time.time >= deadline)
@@ -76,5 +85,60 @@ namespace DesktopPet.Pet.Movement
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, desired, tuning.turnSpeed * Time.deltaTime);
             }
         }
+
+        private void KeepPetInsideCamera()
+        {
+            var safePosition = ConstrainToCamera(transform.position);
+            safePosition.y = transform.position.y;
+            if ((safePosition - transform.position).sqrMagnitude > 0.000001f)
+                transform.position = safePosition;
+        }
+
+        private Vector3 ConstrainToCamera(Vector3 desiredPosition)
+        {
+            var camera = Camera.main;
+            if (camera == null || petRenderers == null || petRenderers.Length == 0) return desiredPosition;
+
+            var bounds = petRenderers[0].bounds;
+            for (var i = 1; i < petRenderers.Length; i++)
+                if (petRenderers[i] != null && petRenderers[i].enabled) bounds.Encapsulate(petRenderers[i].bounds);
+
+            var min = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
+            var max = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
+            for (var x = -1; x <= 1; x += 2)
+            for (var y = -1; y <= 1; y += 2)
+            for (var z = -1; z <= 1; z += 2)
+            {
+                var corner = bounds.center + Vector3.Scale(bounds.extents, new Vector3(x, y, z));
+                var viewport = camera.WorldToViewportPoint(corner);
+                if (viewport.z <= 0f) return transform.position;
+                min = Vector2.Min(min, viewport);
+                max = Vector2.Max(max, viewport);
+            }
+
+            var currentCenter = camera.WorldToViewportPoint(bounds.center);
+            var projectedTargetCenter = camera.WorldToViewportPoint(bounds.center + desiredPosition - transform.position);
+            if (projectedTargetCenter.z <= 0f) return transform.position;
+            var leftPadding = currentCenter.x - min.x + tuning.screenSafeMargin;
+            var rightPadding = max.x - currentCenter.x + tuning.screenSafeMargin;
+            var bottomPadding = currentCenter.y - min.y + tuning.screenSafeMargin;
+            var topPadding = max.y - currentCenter.y + tuning.screenSafeMargin;
+            projectedTargetCenter.x = Mathf.Clamp(projectedTargetCenter.x, leftPadding, 1f - rightPadding);
+            projectedTargetCenter.y = Mathf.Clamp(projectedTargetCenter.y, bottomPadding, 1f - topPadding);
+
+            var constrainedCenter = camera.ViewportToWorldPoint(projectedTargetCenter);
+            var centerOffset = bounds.center - transform.position;
+            var result = constrainedCenter - centerOffset;
+            result.y = desiredPosition.y;
+            return result;
+        }
+
+#if UNITY_EDITOR
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawWireSphere(target, 0.08f);
+        }
+#endif
     }
 }

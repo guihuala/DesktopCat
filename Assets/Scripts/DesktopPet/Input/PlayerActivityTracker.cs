@@ -1,7 +1,7 @@
 using DesktopPet.Events;
 using UnityEngine;
 
-namespace DesktopPet.Input
+namespace DesktopPet.Activity
 {
     public enum PlayerActivityLevel { Idle, Normal, Active }
 

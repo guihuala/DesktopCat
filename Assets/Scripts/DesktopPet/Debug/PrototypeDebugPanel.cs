@@ -45,6 +45,7 @@ namespace DesktopPet
             GUILayout.EndHorizontal();
             if (GUILayout.Button("Restore defaults")) state.SetStats(state.Tuning.initialEnergy, state.Tuning.initialHunger);
             GUILayout.Label(state.IsUninterruptible ? "Locked by uninterruptible behaviour" : "Behaviour can be interrupted");
+            if (GUILayout.Button("Force call response")) brain.RequestCall(true);
             GUI.DragWindow(new Rect(0f, 0f, windowRect.width, 24f));
         }
 

@@ -4,6 +4,10 @@ using DesktopPet.Pet.Movement;
 using DesktopPet.Pet.Presentation;
 using DesktopPet.Pet.State;
 using UnityEngine;
+using DesktopPet.Activity;
+using DesktopPet.Pet.Interaction;
+using DesktopPet.UI;
+using DesktopPet.Presentation;
 
 namespace DesktopPet
 {
@@ -30,6 +34,13 @@ namespace DesktopPet
             GetOrAdd<PetPresentationController>(pet);
             var brain = GetOrAdd<PetBehaviorBrain>(pet);
             brain.Initialize(tuning);
+            GetOrAdd<PlayerActivityTracker>(gameObject);
+            var interaction = GetOrAdd<PetInteractionController>(pet);
+            interaction.Initialize(brain, tuning);
+            GetOrAdd<PetFeedbackPresenter>(pet);
+            GetOrAdd<DayNightController>(gameObject);
+            var tray = GetOrAdd<PhoneTrayController>(gameObject);
+            tray.Initialize(interaction);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             GetOrAdd<PrototypeDebugPanel>(pet);
 #endif

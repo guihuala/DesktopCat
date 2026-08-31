@@ -235,6 +235,7 @@ namespace DesktopPet.Save
             subscriptions.Add(GameEventBus.Subscribe<WindowSettingsChangedEvent>(OnWindowSettingsChanged));
             subscriptions.Add(GameEventBus.Subscribe<WindowMovedEvent>(OnWindowMoved));
             subscriptions.Add(GameEventBus.Subscribe<PetScaleChangedEvent>(OnPetScaleChanged));
+            subscriptions.Add(GameEventBus.Subscribe<DayNightModeChangedEvent>(OnDayNightModeChanged));
         }
 
         private void OnWindowSettingsChanged(WindowSettingsChangedEvent gameEvent)
@@ -261,6 +262,12 @@ namespace DesktopPet.Save
             MarkDirty();
         }
 
+        private void OnDayNightModeChanged(DayNightModeChangedEvent gameEvent)
+        {
+            data.appearance.dayNightMode = gameEvent.Mode;
+            MarkDirty();
+        }
+
         private void EnsureDataShape()
         {
             if (data.window == null)
@@ -281,6 +288,11 @@ namespace DesktopPet.Save
             if (data.privacy == null)
             {
                 data.privacy = new PrivacySettingsData();
+            }
+
+            if (data.appearance == null)
+            {
+                data.appearance = new AppearanceSettingsData();
             }
         }
 
