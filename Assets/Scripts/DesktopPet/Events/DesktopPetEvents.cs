@@ -106,4 +106,32 @@ namespace DesktopPet.Events
             WorldPosition = worldPosition;
         }
     }
+
+    public readonly struct PetStatsChangedEvent : IGameEvent
+    {
+        public readonly float Energy;
+        public readonly float Hunger;
+        public PetStatsChangedEvent(float energy, float hunger) { Energy = energy; Hunger = hunger; }
+    }
+
+    public readonly struct PetBehaviourChangedEvent : IGameEvent
+    {
+        public readonly string BehaviourId;
+        public readonly bool IsUninterruptible;
+        public PetBehaviourChangedEvent(string behaviourId, bool isUninterruptible)
+        { BehaviourId = behaviourId; IsUninterruptible = isUninterruptible; }
+    }
+
+    public readonly struct PetFeedbackEvent : IGameEvent
+    {
+        public readonly string Message;
+        public readonly bool Positive;
+        public PetFeedbackEvent(string message, bool positive) { Message = message; Positive = positive; }
+    }
+
+    public readonly struct PlayerActivityChangedEvent : IGameEvent
+    {
+        public readonly string Level;
+        public PlayerActivityChangedEvent(string level) { Level = level; }
+    }
 }
