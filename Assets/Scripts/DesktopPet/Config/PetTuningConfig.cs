@@ -30,6 +30,9 @@ namespace DesktopPet.Config
         [Min(0.1f)] public float movementTimeout = 12f;
         [Min(0f)] public float wanderRadius = 1.5f;
         [Range(0f, 0.2f)] public float screenSafeMargin = 0.04f;
+        public bool constrainToRoom = true;
+        public Vector2 roomCenter = new Vector2(0f, 0.15f);
+        public Vector2 roomHalfExtents = new Vector2(1.65f, 1.25f);
 
         [Header("Interaction")]
         [Min(0f)] public float clickCooldown = 0.75f;

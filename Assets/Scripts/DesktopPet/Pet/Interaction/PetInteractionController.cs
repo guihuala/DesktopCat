@@ -14,6 +14,9 @@ namespace DesktopPet.Pet.Interaction
         private float nextClickTime;
         private AudioSource audioSource;
         private AudioClip callClip;
+        private bool petPressed;
+        private Vector2 pressPosition;
+        private const float ClickDragThreshold = 8f;
 
         public void Initialize(PetBehaviorBrain targetBrain, PetTuningConfig config)
         {
@@ -27,16 +30,31 @@ namespace DesktopPet.Pet.Interaction
 
         private void Update()
         {
-            if (!UnityEngine.Input.GetMouseButtonDown(0) || Time.unscaledTime < nextClickTime) return;
+            if (UnityEngine.Input.GetMouseButtonDown(0)) BeginPetPress();
+            if (UnityEngine.Input.GetMouseButtonUp(0)) EndPetPress();
+        }
+
+        private void BeginPetPress()
+        {
+            petPressed = false;
+            if (Time.unscaledTime < nextClickTime) return;
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
-            if (windowController != null && windowController.IsDragging) return;
             var camera = Camera.main;
             if (camera == null) return;
             var ray = camera.ScreenPointToRay(UnityEngine.Input.mousePosition);
             if (!Physics.Raycast(ray, out var hit) || !hit.transform.IsChildOf(transform) && hit.transform != transform) return;
+            petPressed = true;
+            pressPosition = UnityEngine.Input.mousePosition;
+        }
+
+        private void EndPetPress()
+        {
+            if (!petPressed) return;
+            petPressed = false;
+            if (Vector2.Distance(pressPosition, UnityEngine.Input.mousePosition) > ClickDragThreshold) return;
+            if (windowController != null && windowController.IsDragging) return;
             nextClickTime = Time.unscaledTime + tuning.clickCooldown;
-            GameEventBus.Publish(new PetInteractionEvent("click", hit.point));
-            GameEventBus.Publish(new PetFeedbackEvent("被你发现啦！", true));
+            GameEventBus.Publish(new PetInteractionEvent("click", transform.position));
         }
 
         public void RequestFeed() { brain.RequestFeed(); GameEventBus.Publish(new PetFeedbackEvent("食物准备好了", false)); }

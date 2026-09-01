@@ -8,6 +8,7 @@ namespace DesktopPet.Pet.Movement
         [SerializeField] private Transform[] waypoints;
         [SerializeField] private Transform bedPoint;
         [SerializeField] private Transform foodPoint;
+        [SerializeField] private Transform toiletPoint;
         [SerializeField] private Transform cameraPoint;
         private PetTuningConfig tuning;
         private Vector3 target;
@@ -17,12 +18,22 @@ namespace DesktopPet.Pet.Movement
         public bool IsMoving { get; private set; }
         public Vector3 Target => target;
         public Transform BedPoint => bedPoint;
+        public Transform FoodPoint => foodPoint;
+        public Transform ToiletPoint => toiletPoint;
 
         public void Initialize(PetTuningConfig config)
         {
             tuning = config;
             petRenderers = GetComponentsInChildren<Renderer>();
+            if (foodPoint == null) foodPoint = FindScenePoint("FoodBowlPoint");
+            if (toiletPoint == null) toiletPoint = FindScenePoint("ToiletPoint");
             KeepPetInsideCamera();
+        }
+
+        private static Transform FindScenePoint(string objectName)
+        {
+            var point = GameObject.Find(objectName);
+            return point != null ? point.transform : null;
         }
 
         public bool MoveToRandomPoint()
@@ -57,6 +68,7 @@ namespace DesktopPet.Pet.Movement
         {
             target = worldPosition;
             target.y = transform.position.y;
+            target = ConstrainToRoom(target);
             target = ConstrainToCamera(target);
             deadline = Time.time + tuning.movementTimeout;
             IsMoving = true;
@@ -131,6 +143,18 @@ namespace DesktopPet.Pet.Movement
             var result = constrainedCenter - centerOffset;
             result.y = desiredPosition.y;
             return result;
+        }
+
+        private Vector3 ConstrainToRoom(Vector3 position)
+        {
+            if (!tuning.constrainToRoom) return position;
+            position.x = Mathf.Clamp(position.x,
+                tuning.roomCenter.x - tuning.roomHalfExtents.x,
+                tuning.roomCenter.x + tuning.roomHalfExtents.x);
+            position.z = Mathf.Clamp(position.z,
+                tuning.roomCenter.y - tuning.roomHalfExtents.y,
+                tuning.roomCenter.y + tuning.roomHalfExtents.y);
+            return position;
         }
 
 #if UNITY_EDITOR

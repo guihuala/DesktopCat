@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using DG.Tweening;
 using DesktopPet.Events;
 using UnityEngine;
 
@@ -8,28 +8,56 @@ namespace DesktopPet.Pet.Presentation
     public sealed class PetFeedbackPresenter : MonoBehaviour
     {
         private IDisposable subscription;
+        private IDisposable interactionSubscription;
+        private IDisposable scaleSubscription;
+        private Sequence reaction;
+        private Vector3 restingScale;
+        [SerializeField, Range(0f, 0.15f)] private float squashAmount = 0.045f;
+        [SerializeField, Min(0.05f)] private float pressDuration = 0.1f;
+        [SerializeField, Min(0.05f)] private float releaseDuration = 0.28f;
         private string message;
         private float hideAt;
         private bool positive;
 
-        private void OnEnable() => subscription = GameEventBus.Subscribe<PetFeedbackEvent>(OnFeedback);
-        private void OnDisable() { subscription?.Dispose(); subscription = null; }
-        private Coroutine pulse;
+        private void OnEnable()
+        {
+            subscription = GameEventBus.Subscribe<PetFeedbackEvent>(OnFeedback);
+            interactionSubscription = GameEventBus.Subscribe<PetInteractionEvent>(OnInteraction);
+            // Settings has already applied the new scale before publishing this event.
+            scaleSubscription = GameEventBus.Subscribe<PetScaleChangedEvent>(_ => StopReaction(false));
+        }
+
+        private void OnDisable()
+        {
+            subscription?.Dispose(); subscription = null;
+            interactionSubscription?.Dispose(); interactionSubscription = null;
+            scaleSubscription?.Dispose(); scaleSubscription = null;
+            StopReaction(true);
+        }
         private void OnFeedback(PetFeedbackEvent item)
         {
             message = item.Message; positive = item.Positive; hideAt = Time.unscaledTime + 2.5f;
-            if (item.Positive) { if (pulse != null) StopCoroutine(pulse); pulse = StartCoroutine(Pulse()); }
         }
 
-        private IEnumerator Pulse()
+        private void OnInteraction(PetInteractionEvent item)
         {
-            var original = transform.localScale;
-            var enlarged = original * 1.04f;
-            for (var elapsed = 0f; elapsed < 0.12f; elapsed += Time.unscaledDeltaTime)
-            { transform.localScale = Vector3.Lerp(original, enlarged, elapsed / 0.12f); yield return null; }
-            for (var elapsed = 0f; elapsed < 0.16f; elapsed += Time.unscaledDeltaTime)
-            { transform.localScale = Vector3.Lerp(enlarged, original, elapsed / 0.16f); yield return null; }
-            transform.localScale = original; pulse = null;
+            if (item.InteractionId != "click") return;
+            StopReaction(true);
+            message = null;
+            restingScale = transform.localScale;
+            var squashed = Vector3.Scale(restingScale, new Vector3(1f + squashAmount, 1f - squashAmount, 1f + squashAmount));
+            reaction = DOTween.Sequence().SetUpdate(true);
+            reaction.Append(transform.DOScale(squashed, pressDuration).SetEase(Ease.OutQuad));
+            reaction.Append(transform.DOScale(restingScale, releaseDuration).SetEase(Ease.OutBack));
+            reaction.OnComplete(() => reaction = null);
+        }
+
+        private void StopReaction(bool restoreScale)
+        {
+            if (reaction == null) return;
+            reaction.Kill();
+            reaction = null;
+            if (restoreScale) transform.localScale = restingScale;
         }
 
         private void OnGUI()

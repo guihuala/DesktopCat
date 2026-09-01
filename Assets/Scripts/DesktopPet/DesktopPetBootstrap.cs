@@ -39,8 +39,9 @@ namespace DesktopPet
             interaction.Initialize(brain, tuning);
             GetOrAdd<PetFeedbackPresenter>(pet);
             GetOrAdd<DayNightController>(gameObject);
-            var tray = GetOrAdd<PhoneTrayController>(gameObject);
-            tray.Initialize(interaction);
+            var tray = FindObjectOfType<PhoneTrayController>();
+            if (tray != null) tray.Initialize(interaction);
+            else Debug.LogError("PhoneTrayController is missing from the scene HUD.");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             GetOrAdd<PrototypeDebugPanel>(pet);
 #endif
