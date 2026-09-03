@@ -14,7 +14,7 @@ namespace DesktopPet
     [DefaultExecutionOrder(-200)]
     public sealed class DesktopPetBootstrap : MonoBehaviour
     {
-        [SerializeField] private string petRootName = "Monkey";
+        [SerializeField] private string petRootName = "Cat";
         [SerializeField] private PetTuningConfig tuning;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void EnsureBootstrap()
@@ -29,6 +29,7 @@ namespace DesktopPet
             if (pet == null) { Debug.LogError($"Desktop pet bootstrap could not find pet root '{petRootName}'."); return; }
             if (tuning == null) tuning = Resources.Load<PetTuningConfig>("Config/PetTuningConfig");
             if (tuning == null) tuning = PetTuningConfig.CreateRuntimeDefaults();
+            ConfigurePhysics(pet);
             GetOrAdd<PetStateController>(pet);
             GetOrAdd<PetMovementController>(pet);
             GetOrAdd<PetPresentationController>(pet);
@@ -52,6 +53,19 @@ namespace DesktopPet
         {
             var component = target.GetComponent<T>();
             return component != null ? component : target.AddComponent<T>();
+        }
+
+        private static void ConfigurePhysics(GameObject pet)
+        {
+            var body = GetOrAdd<Rigidbody>(pet);
+            body.useGravity = true;
+            body.isKinematic = false;
+            body.mass = 1f;
+            body.drag = 1f;
+            body.angularDrag = 5f;
+            body.interpolation = RigidbodyInterpolation.Interpolate;
+            body.collisionDetectionMode = CollisionDetectionMode.Continuous;
+            body.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         }
     }
 }

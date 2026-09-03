@@ -16,7 +16,7 @@ namespace DesktopPet.Save
 
         [SerializeField] private WindowController windowController;
         [SerializeField] private Transform petRoot;
-        [SerializeField] private string petRootName = "Monkey";
+        [SerializeField] private string petRootName = "Cat";
         [SerializeField] private bool autoSave = true;
 
         private readonly CompositeSubscription subscriptions = new CompositeSubscription();

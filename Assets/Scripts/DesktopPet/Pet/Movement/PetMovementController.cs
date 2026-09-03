@@ -14,6 +14,7 @@ namespace DesktopPet.Pet.Movement
         private Vector3 target;
         private float deadline;
         private Renderer[] petRenderers;
+        private Rigidbody petBody;
 
         public bool IsMoving { get; private set; }
         public Vector3 Target => target;
@@ -25,6 +26,7 @@ namespace DesktopPet.Pet.Movement
         {
             tuning = config;
             petRenderers = GetComponentsInChildren<Renderer>();
+            petBody = GetComponent<Rigidbody>();
             if (foodPoint == null) foodPoint = FindScenePoint("FoodBowlPoint");
             if (toiletPoint == null) toiletPoint = FindScenePoint("ToiletPoint");
             KeepPetInsideCamera();
@@ -81,8 +83,13 @@ namespace DesktopPet.Pet.Movement
         {
             if (tuning == null) return;
             KeepPetInsideCamera();
-            if (!IsMoving) return;
-            var delta = target - transform.position;
+        }
+
+        private void FixedUpdate()
+        {
+            if (tuning == null || !IsMoving) return;
+            var currentPosition = petBody != null ? petBody.position : transform.position;
+            var delta = target - currentPosition;
             delta.y = 0f;
             if (delta.magnitude <= tuning.arrivalDistance || Time.time >= deadline)
             {
@@ -90,11 +97,17 @@ namespace DesktopPet.Pet.Movement
                 return;
             }
 
-            transform.position = Vector3.MoveTowards(transform.position, target, tuning.walkSpeed * Time.deltaTime);
+            var horizontalTarget = new Vector3(target.x, currentPosition.y, target.z);
+            var nextPosition = Vector3.MoveTowards(currentPosition, horizontalTarget, tuning.walkSpeed * Time.fixedDeltaTime);
+            if (petBody != null) petBody.MovePosition(nextPosition);
+            else transform.position = nextPosition;
             if (delta.sqrMagnitude > 0.0001f)
             {
                 var desired = Quaternion.LookRotation(delta.normalized, Vector3.up);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, desired, tuning.turnSpeed * Time.deltaTime);
+                var currentRotation = petBody != null ? petBody.rotation : transform.rotation;
+                var nextRotation = Quaternion.RotateTowards(currentRotation, desired, tuning.turnSpeed * Time.fixedDeltaTime);
+                if (petBody != null) petBody.MoveRotation(nextRotation);
+                else transform.rotation = nextRotation;
             }
         }
 
@@ -102,8 +115,9 @@ namespace DesktopPet.Pet.Movement
         {
             var safePosition = ConstrainToCamera(transform.position);
             safePosition.y = transform.position.y;
-            if ((safePosition - transform.position).sqrMagnitude > 0.000001f)
-                transform.position = safePosition;
+            if ((safePosition - transform.position).sqrMagnitude <= 0.000001f) return;
+            if (petBody != null) petBody.position = safePosition;
+            else transform.position = safePosition;
         }
 
         private Vector3 ConstrainToCamera(Vector3 desiredPosition)

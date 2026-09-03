@@ -18,7 +18,7 @@ namespace DesktopPet
         [SerializeField] private Transform panelRoot;
         [SerializeField] private WindowController windowController;
         [SerializeField] private Transform petRoot;
-        [SerializeField] private string petRootName = "Monkey";
+        [SerializeField] private string petRootName = "Cat";
 
         [Header("Pet Size")]
         [SerializeField] private float minPetScale = 0.25f;
