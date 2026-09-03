@@ -14,6 +14,7 @@ namespace DesktopPet.Save
         public AppearanceSettingsData appearance = new AppearanceSettingsData();
         public OnlineRewardSaveData onlineReward = new OnlineRewardSaveData();
         public FurnitureInventorySaveData furnitureInventory = new FurnitureInventorySaveData();
+        public FurniturePlacementSaveData furniturePlacement = new FurniturePlacementSaveData();
     }
 
     [Serializable]
@@ -74,5 +75,18 @@ namespace DesktopPet.Save
     {
         public List<FurnitureItemSaveData> items = new List<FurnitureItemSaveData>();
         public List<string> discoveredIds = new List<string>();
+    }
+
+    [Serializable]
+    public class FurniturePlacementItemSaveData
+    {
+        public int anchorType;
+        public string furnitureId;
+    }
+
+    [Serializable]
+    public class FurniturePlacementSaveData
+    {
+        public List<FurniturePlacementItemSaveData> items = new List<FurniturePlacementItemSaveData>();
     }
 }

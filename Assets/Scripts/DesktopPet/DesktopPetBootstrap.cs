@@ -45,6 +45,8 @@ namespace DesktopPet
             GetOrAdd<OnlineRewardService>(gameObject);
             GetOrAdd<FurnitureDropService>(gameObject);
             GetOrAdd<FurnitureInventory>(gameObject);
+            GetOrAdd<FurnitureRewardClaimService>(gameObject);
+            GetOrAdd<FurniturePlacementController>(gameObject);
             var tray = FindObjectOfType<PhoneTrayController>();
             if (tray != null) tray.Initialize(interaction);
             else Debug.LogError("PhoneTrayController is missing from the scene HUD.");

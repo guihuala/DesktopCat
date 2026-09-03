@@ -94,6 +94,21 @@ namespace DesktopPet.Furniture
             return true;
         }
 
+        public void ReconcilePlacedCounts(IReadOnlyDictionary<string, int> expectedCounts)
+        {
+            var changed = false;
+            foreach (var pair in entries)
+            {
+                var expected = expectedCounts != null && expectedCounts.TryGetValue(pair.Key, out var count) ? count : 0;
+                expected = Mathf.Clamp(expected, 0, pair.Value.TotalOwned);
+                if (pair.Value.PlacedCount == expected) continue;
+                pair.Value.PlacedCount = expected;
+                changed = true;
+                Publish(pair.Key, pair.Value, false);
+            }
+            if (changed) Persist();
+        }
+
         private void LoadAndRepair()
         {
             entries.Clear();

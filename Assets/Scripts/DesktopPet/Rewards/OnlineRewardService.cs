@@ -57,6 +57,15 @@ namespace DesktopPet.Rewards
             Persist();
         }
 
+        public bool TryConsumePendingReward()
+        {
+            if (PendingRewards <= 0) return false;
+            PendingRewards--;
+            Persist();
+            PublishProgress();
+            return true;
+        }
+
         private void AddOnlineSeconds(double seconds, bool publish)
         {
             if (PendingRewards >= MaxPendingRewards) return;

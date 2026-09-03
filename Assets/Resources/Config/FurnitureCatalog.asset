@@ -11,101 +11,121 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b5fbef384b594365862ce5bb77d6365a, type: 3}
   m_Name: FurnitureCatalog
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   items:
   - id: common_soft_bed
-    displayName: 柔软猫窝
+    displayName: "\u67D4\u8F6F\u732B\u7A9D"
     rarity: 0
     anchorType: 0
-    prefab: {fileID: 0}
+    prefab: {fileID: 8898705298115338786, guid: e56cc43b7cfe54bc7b86324f9028d1b6, type: 3}
     icon: {fileID: 0}
-    description: 一张适合长时间打盹的柔软猫窝。
-    tags: [休息, 柔软]
+    description: "\u4E00\u5F20\u9002\u5408\u957F\u65F6\u95F4\u6253\u76F9\u7684\u67D4\u8F6F\u732B\u7A9D\u3002"
+    tags:
+    - "\u4F11\u606F"
+    - "\u67D4\u8F6F"
   - id: common_wood_bowl
-    displayName: 木纹食盆
+    displayName: "\u6728\u7EB9\u98DF\u76C6"
     rarity: 0
     anchorType: 1
-    prefab: {fileID: 0}
+    prefab: {fileID: 6720264947440518122, guid: 070cac6f319ea40b6800e2b1a2d69005, type: 3}
     icon: {fileID: 0}
-    description: 朴素耐用的木纹食盆。
-    tags: [进食]
+    description: "\u6734\u7D20\u8010\u7528\u7684\u6728\u7EB9\u98DF\u76C6\u3002"
+    tags:
+    - "\u8FDB\u98DF"
   - id: common_round_rug
-    displayName: 圆圆地毯
+    displayName: "\u5706\u5706\u5730\u6BEF"
     rarity: 0
     anchorType: 2
-    prefab: {fileID: 0}
+    prefab: {fileID: 5876437326665985949, guid: fa4506726e0f5475ab0779566ce4bf39, type: 3}
     icon: {fileID: 0}
-    description: 猫咪喜欢在上面伸懒腰。
-    tags: [地毯]
+    description: "\u732B\u54AA\u559C\u6B22\u5728\u4E0A\u9762\u4F38\u61D2\u8170\u3002"
+    tags:
+    - "\u5730\u6BEF"
   - id: common_yarn_ball
-    displayName: 毛线球
+    displayName: "\u6BDB\u7EBF\u7403"
     rarity: 0
     anchorType: 4
-    prefab: {fileID: 0}
+    prefab: {fileID: 2063752700336142390, guid: 256f738aa1498462285bc18458b560ae, type: 3}
     icon: {fileID: 0}
-    description: 一颗普通但很受欢迎的毛线球。
-    tags: [玩具]
+    description: "\u4E00\u9897\u666E\u901A\u4F46\u5F88\u53D7\u6B22\u8FCE\u7684\u6BDB\u7EBF\u7403\u3002"
+    tags:
+    - "\u73A9\u5177"
   - id: common_cardboard_box
-    displayName: 纸箱
+    displayName: "\u7EB8\u7BB1"
     rarity: 0
     anchorType: 3
-    prefab: {fileID: 0}
+    prefab: {fileID: 8493884407569446367, guid: e0bca32e2913b45f295266b8bb366c7d, type: 3}
     icon: {fileID: 0}
-    description: 没有猫能拒绝一个大小刚好的纸箱。
-    tags: [桌面, 藏身]
+    description: "\u6CA1\u6709\u732B\u80FD\u62D2\u7EDD\u4E00\u4E2A\u5927\u5C0F\u521A\u597D\u7684\u7EB8\u7BB1\u3002"
+    tags:
+    - "\u684C\u9762"
+    - "\u85CF\u8EAB"
   - id: common_mouse_toy
-    displayName: 小鼠玩具
+    displayName: "\u5C0F\u9F20\u73A9\u5177"
     rarity: 0
     anchorType: 4
-    prefab: {fileID: 0}
+    prefab: {fileID: 5221309143727591462, guid: 702179a790d244bd6bb1463e94bfa3bb, type: 3}
     icon: {fileID: 0}
-    description: 会让猫咪忍不住扑过去的小玩具。
-    tags: [玩具]
+    description: "\u4F1A\u8BA9\u732B\u54AA\u5FCD\u4E0D\u4F4F\u6251\u8FC7\u53BB\u7684\u5C0F\u73A9\u5177\u3002"
+    tags:
+    - "\u73A9\u5177"
   - id: common_leaf_cushion
-    displayName: 叶子坐垫
+    displayName: "\u53F6\u5B50\u5750\u57AB"
     rarity: 0
     anchorType: 2
-    prefab: {fileID: 0}
+    prefab: {fileID: 7317255343997901535, guid: a3316227f10d7420f91877981d89a201, type: 3}
     icon: {fileID: 0}
-    description: 像一片大叶子的轻软坐垫。
-    tags: [地毯, 休息]
+    description: "\u50CF\u4E00\u7247\u5927\u53F6\u5B50\u7684\u8F7B\u8F6F\u5750\u57AB\u3002"
+    tags:
+    - "\u5730\u6BEF"
+    - "\u4F11\u606F"
   - id: common_tin_bowl
-    displayName: 搪瓷食盆
+    displayName: "\u642A\u74F7\u98DF\u76C6"
     rarity: 0
     anchorType: 1
-    prefab: {fileID: 0}
+    prefab: {fileID: 7851470154319908044, guid: e30504d042f7944e58ece43f608b8ef3, type: 3}
     icon: {fileID: 0}
-    description: 带一点复古气息的小食盆。
-    tags: [进食]
+    description: "\u5E26\u4E00\u70B9\u590D\u53E4\u6C14\u606F\u7684\u5C0F\u98DF\u76C6\u3002"
+    tags:
+    - "\u8FDB\u98DF"
   - id: rare_cloud_bed
-    displayName: 云朵猫窝
+    displayName: "\u4E91\u6735\u732B\u7A9D"
     rarity: 1
     anchorType: 0
-    prefab: {fileID: 0}
+    prefab: {fileID: 2761795599193794687, guid: e8e3490b53b2941a487f25c876994158, type: 3}
     icon: {fileID: 0}
-    description: 看起来像睡在一小片云上。
-    tags: [休息, 稀有]
+    description: "\u770B\u8D77\u6765\u50CF\u7761\u5728\u4E00\u5C0F\u7247\u4E91\u4E0A\u3002"
+    tags:
+    - "\u4F11\u606F"
+    - "\u7A00\u6709"
   - id: rare_fish_lamp
-    displayName: 小鱼夜灯
+    displayName: "\u5C0F\u9C7C\u591C\u706F"
     rarity: 1
     anchorType: 3
-    prefab: {fileID: 0}
+    prefab: {fileID: 4487669465276201187, guid: f4ac6a4231b3242bd850920d71cd2e5f, type: 3}
     icon: {fileID: 0}
-    description: 发出温柔暖光的小鱼灯。
-    tags: [桌面, 灯具, 稀有]
+    description: "\u53D1\u51FA\u6E29\u67D4\u6696\u5149\u7684\u5C0F\u9C7C\u706F\u3002"
+    tags:
+    - "\u684C\u9762"
+    - "\u706F\u5177"
+    - "\u7A00\u6709"
   - id: rare_bell_ball
-    displayName: 铃铛球
+    displayName: "\u94C3\u94DB\u7403"
     rarity: 1
     anchorType: 4
-    prefab: {fileID: 0}
+    prefab: {fileID: 860229949424286949, guid: cb3df636233eb4d7ca0432891eae48a1, type: 3}
     icon: {fileID: 0}
-    description: 滚动时会发出清脆声音。
-    tags: [玩具, 稀有]
+    description: "\u6EDA\u52A8\u65F6\u4F1A\u53D1\u51FA\u6E05\u8106\u58F0\u97F3\u3002"
+    tags:
+    - "\u73A9\u5177"
+    - "\u7A00\u6709"
   - id: collectible_moon_bed
-    displayName: 月亮猫窝
+    displayName: "\u6708\u4EAE\u732B\u7A9D"
     rarity: 2
     anchorType: 0
-    prefab: {fileID: 0}
+    prefab: {fileID: 1055381263664072502, guid: a09694280151246adae3253df848809b, type: 3}
     icon: {fileID: 0}
-    description: 像月牙一样环抱猫咪的珍藏猫窝。
-    tags: [休息, 珍藏]
+    description: "\u50CF\u6708\u7259\u4E00\u6837\u73AF\u62B1\u732B\u54AA\u7684\u73CD\u85CF\u732B\u7A9D\u3002"
+    tags:
+    - "\u4F11\u606F"
+    - "\u73CD\u85CF"

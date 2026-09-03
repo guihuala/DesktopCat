@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 using DesktopPet.Events;
+using DesktopPet.Rewards;
+using DesktopPet.UI;
 
 namespace DesktopPet
 {
@@ -29,12 +31,16 @@ namespace DesktopPet
         [Header("Panels")]
         [SerializeField] private PanelPrefab[] panelPrefabs;
         [SerializeField] private SettingsPanel settingsPanelPrefab;
+        [SerializeField] private RewardClaimPanel rewardClaimPanelPrefab;
+        [SerializeField] private FurniturePlacementPanel furniturePlacementPanelPrefab;
         [SerializeField] private KeyCode closeTopPanelKey = KeyCode.Escape;
 
         private readonly Dictionary<string, UIPanel> panels = new Dictionary<string, UIPanel>();
         private readonly Dictionary<UIPanel, string> panelIds = new Dictionary<UIPanel, string>();
         private readonly List<UIPanel> openStack = new List<UIPanel>();
         private SettingsPanel settingsPanel;
+        private RewardClaimPanel rewardClaimPanel;
+        private FurniturePlacementPanel furniturePlacementPanel;
         private bool clickThroughBeforePanel;
         private bool isManagingClickThrough;
 
@@ -84,6 +90,8 @@ namespace DesktopPet
 
             CreateConfiguredPanels();
             CreateSettingsPanel();
+            CreateRewardClaimPanel();
+            CreateFurniturePlacementPanel();
         }
 
         private void Update()
@@ -178,6 +186,16 @@ namespace DesktopPet
             TogglePanel("settings");
         }
 
+        public void ToggleRewardClaimPanel()
+        {
+            TogglePanel("rewards");
+        }
+
+        public void ToggleFurniturePlacementPanel()
+        {
+            TogglePanel("furniture-placement");
+        }
+
         private void CreateConfiguredPanels()
         {
             if (panelPrefabs == null)
@@ -217,6 +235,34 @@ namespace DesktopPet
                 defaultPetScale,
                 ToggleSettingsPanel);
             RegisterPanel("settings", settingsPanel);
+        }
+
+        private void CreateRewardClaimPanel()
+        {
+            if (rewardClaimPanelPrefab == null)
+                rewardClaimPanelPrefab = Resources.Load<RewardClaimPanel>("UI/RewardClaimPanel");
+            if (rewardClaimPanelPrefab == null)
+            {
+                Debug.LogWarning("UIManager needs a reward claim panel prefab.");
+                return;
+            }
+            rewardClaimPanel = Instantiate(rewardClaimPanelPrefab, panelRoot, false);
+            rewardClaimPanel.Initialize(FindObjectOfType<FurnitureRewardClaimService>(), ToggleRewardClaimPanel, ToggleFurniturePlacementPanel);
+            RegisterPanel("rewards", rewardClaimPanel);
+        }
+
+        private void CreateFurniturePlacementPanel()
+        {
+            if (furniturePlacementPanelPrefab == null)
+                furniturePlacementPanelPrefab = Resources.Load<FurniturePlacementPanel>("UI/FurniturePlacementPanel");
+            if (furniturePlacementPanelPrefab == null)
+            {
+                Debug.LogWarning("UIManager needs a furniture placement panel prefab.");
+                return;
+            }
+            furniturePlacementPanel = Instantiate(furniturePlacementPanelPrefab, panelRoot, false);
+            furniturePlacementPanel.Initialize(ToggleFurniturePlacementPanel);
+            RegisterPanel("furniture-placement", furniturePlacementPanel);
         }
 
         private void RegisterPanel(string panelId, UIPanel panel)

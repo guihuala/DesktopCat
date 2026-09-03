@@ -319,6 +319,16 @@ namespace DesktopPet.Save
             {
                 data.furnitureInventory.discoveredIds = new System.Collections.Generic.List<string>();
             }
+
+            if (data.furniturePlacement == null)
+            {
+                data.furniturePlacement = new FurniturePlacementSaveData();
+            }
+
+            if (data.furniturePlacement.items == null)
+            {
+                data.furniturePlacement.items = new System.Collections.Generic.List<FurniturePlacementItemSaveData>();
+            }
         }
 
         private sealed class CompositeSubscription

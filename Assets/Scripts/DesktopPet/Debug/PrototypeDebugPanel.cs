@@ -121,9 +121,9 @@ namespace DesktopPet
             SetRect(rewardText.rectTransform, new Vector2(104f, -582f), new Vector2(150f, 26f), new Vector2(0f, 1f));
             CreateSmallButton("增加10分钟", 250f, -579f, () => AddRewardMinutes(10));
             CreateSmallButton("增加30分钟", 24f, -620f, () => AddRewardMinutes(30));
-            CreateSmallButton("测试抽一次", 126f, -620f, TestSingleDrop);
+            CreateSmallButton("预览一次掉落", 126f, -620f, TestSingleDrop);
             CreateSmallButton("模拟1000次", 228f, -620f, TestDropDistribution);
-            dropResultText = CreateText("抽取测试不会消耗待领取数量", panel.transform, 14, MutedColor, FontStyle.Normal, TextAnchor.MiddleLeft);
+            dropResultText = CreateText("掉落预览不会生成可领取家具", panel.transform, 14, MutedColor, FontStyle.Normal, TextAnchor.MiddleLeft);
             SetRect(dropResultText.rectTransform, new Vector2(24f, -657f), new Vector2(342f, 24f), new Vector2(0f, 1f));
 
             openButton = CreateButton("打开状态测试", canvasObject.transform, () => SetVisible(true), AccentColor);
