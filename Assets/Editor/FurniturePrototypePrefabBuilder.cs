@@ -33,11 +33,11 @@ namespace DesktopPet.Editor
         private static void BuildAnchorSet()
         {
             var root = new GameObject("FurnitureAnchorSet");
-            AddAnchor(root.transform, "猫窝位置", FurnitureAnchorType.CatBed, new Vector3(-1.05f, 0.03f, 0.65f));
-            AddAnchor(root.transform, "食盆位置", FurnitureAnchorType.FoodBowl, new Vector3(1.05f, 0.03f, 0.65f));
-            AddAnchor(root.transform, "地毯位置", FurnitureAnchorType.Rug, new Vector3(0f, 0.025f, 0.15f));
-            AddAnchor(root.transform, "桌面位置", FurnitureAnchorType.Desktop, new Vector3(0.72f, 0.18f, -0.58f));
-            AddAnchor(root.transform, "玩具位置", FurnitureAnchorType.Toy, new Vector3(-0.62f, 0.04f, -0.18f));
+            AddAnchor(root.transform, "猫窝位置", FurnitureAnchorType.CatBed, new Vector3(-1.05f, -0.65f, 0.65f));
+            AddAnchor(root.transform, "食盆位置", FurnitureAnchorType.FoodBowl, new Vector3(1.05f, -0.65f, 0.65f));
+            AddAnchor(root.transform, "地毯位置", FurnitureAnchorType.Rug, new Vector3(0f, -0.65f, 0.15f));
+            AddAnchor(root.transform, "桌面位置", FurnitureAnchorType.Desktop, new Vector3(0.72f, -0.65f, -0.58f));
+            AddAnchor(root.transform, "玩具位置", FurnitureAnchorType.Toy, new Vector3(-0.62f, -0.65f, -0.18f));
             PrefabUtility.SaveAsPrefabAsset(root, AnchorPrefabPath);
             Object.DestroyImmediate(root);
         }

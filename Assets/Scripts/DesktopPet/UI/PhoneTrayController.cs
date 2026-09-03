@@ -29,13 +29,11 @@ namespace DesktopPet.UI
         public void Call() { if (interaction != null) interaction.RequestCall(); }
         public void Furniture()
         {
-            Close();
             if (uiManager != null) uiManager.ToggleRewardClaimPanel();
         }
 
         public void Settings()
         {
-            Close();
             if (uiManager != null) uiManager.ToggleSettingsPanel();
         }
 

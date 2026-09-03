@@ -43,7 +43,7 @@ namespace DesktopPet.Furniture
             if (inventory == null || !inventory.TryReserveForPlacement(furnitureId)) { error = "库存中没有可用的这件家具。"; return false; }
             if (!string.IsNullOrEmpty(currentId)) inventory.ReleasePlaced(currentId);
             ClearInstance(anchorType);
-            var instance = Instantiate(definition.prefab, anchor.ContentRoot, false);
+            var instance = InstantiateAtAnchor(definition.prefab, anchor);
             instance.name = definition.displayName;
             instances[anchorType] = instance;
             placedIds[anchorType] = furnitureId;
@@ -74,7 +74,7 @@ namespace DesktopPet.Furniture
                     if (catalog == null || !catalog.TryGet(item.furnitureId, out var definition) || definition.anchorType != anchorType || definition.prefab == null) continue;
                     if (inventory == null || inventory.Get(item.furnitureId).TotalOwned <= 0) continue;
                     placedIds.Add(anchorType, item.furnitureId);
-                    var instance = Instantiate(definition.prefab, anchor.ContentRoot, false);
+                    var instance = InstantiateAtAnchor(definition.prefab, anchor);
                     instance.name = definition.displayName;
                     instances[anchorType] = instance;
                 }
@@ -90,6 +90,21 @@ namespace DesktopPet.Furniture
             if (!instances.TryGetValue(anchorType, out var instance)) return;
             if (instance != null) Destroy(instance);
             instances.Remove(anchorType);
+        }
+
+        private static GameObject InstantiateAtAnchor(GameObject prefab, FurnitureAnchor anchor)
+        {
+            var instance = Instantiate(prefab, anchor.ContentRoot, false);
+            instance.transform.localPosition = Vector3.zero;
+            var renderers = instance.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0) return instance;
+            var bounds = renderers[0].bounds;
+            for (var i = 1; i < renderers.Length; i++)
+                if (renderers[i] != null && renderers[i].enabled) bounds.Encapsulate(renderers[i].bounds);
+            var position = instance.transform.position;
+            position.y += anchor.ContentRoot.position.y - bounds.min.y;
+            instance.transform.position = position;
+            return instance;
         }
 
         private void Persist()

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using DesktopPet.Events;
+using DesktopPet.Pet.State;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,11 +12,14 @@ namespace DesktopPet.Save
     {
         private const string SaveFileName = "desktop_pet_save.json";
         private const float AutoSaveDelay = 0.5f;
+        private const int CurrentSaveVersion = 3;
+        private const float PetStatsCheckpointSeconds = 10f;
 
         private static SaveManager instance;
 
         [SerializeField] private WindowController windowController;
         [SerializeField] private Transform petRoot;
+        [SerializeField] private PetStateController petState;
         [SerializeField] private string petRootName = "Cat";
         [SerializeField] private bool autoSave = true;
 
@@ -25,6 +29,7 @@ namespace DesktopPet.Save
         private bool pendingSave;
         private float saveTimer;
         private bool isApplyingLoadedData;
+        private float lastPetStatsCheckpoint;
 
         public static DesktopPetSaveData Data => instance != null ? instance.data : null;
         public static string SavePath => instance != null ? instance.savePath : string.Empty;
@@ -131,26 +136,26 @@ namespace DesktopPet.Save
         {
             data = new DesktopPetSaveData();
 
-            if (!File.Exists(savePath))
+            if (TryLoadFile(savePath, out var loaded, out var primaryError))
             {
+                data = loaded;
+                MigrateAndRepair();
                 return;
             }
 
-            try
+            var backupPath = savePath + ".bak";
+            if (TryLoadFile(backupPath, out loaded, out var backupError))
             {
-                var json = File.ReadAllText(savePath);
-                var loaded = JsonUtility.FromJson<DesktopPetSaveData>(json);
-                if (loaded != null)
-                {
-                    data = loaded;
-                    EnsureDataShape();
-                }
+                data = loaded;
+                MigrateAndRepair();
+                Debug.LogWarning($"主存档损坏，已从备份恢复。原因：{primaryError}");
+                try { File.Copy(backupPath, savePath, true); }
+                catch (Exception exception) { Debug.LogWarning($"恢复主存档文件失败：{exception.Message}"); }
+                return;
             }
-            catch (Exception exception)
-            {
-                Debug.LogWarning($"Failed to load desktop pet save at {savePath}: {exception.Message}");
-                data = new DesktopPetSaveData();
-            }
+
+            Debug.LogWarning($"主存档与备份均无法读取，将使用新存档。主存档：{primaryError}；备份：{backupError}");
+            data = new DesktopPetSaveData();
         }
 
         public void Save()
@@ -165,14 +170,15 @@ namespace DesktopPet.Save
                 Directory.CreateDirectory(Path.GetDirectoryName(savePath));
                 var json = JsonUtility.ToJson(data, true);
                 var tempPath = savePath + ".tmp";
+                var backupPath = savePath + ".bak";
                 File.WriteAllText(tempPath, json);
 
                 if (File.Exists(savePath))
                 {
-                    File.Delete(savePath);
+                    File.Copy(savePath, backupPath, true);
                 }
-
-                File.Move(tempPath, savePath);
+                File.Copy(tempPath, savePath, true);
+                File.Delete(tempPath);
                 pendingSave = false;
             }
             catch (Exception exception)
@@ -204,6 +210,11 @@ namespace DesktopPet.Save
                 var pet = GameObject.Find(petRootName);
                 petRoot = pet != null ? pet.transform : null;
             }
+
+            if (petState == null && petRoot != null)
+            {
+                petState = petRoot.GetComponent<PetStateController>();
+            }
         }
 
         private void ApplyLoadedData()
@@ -231,6 +242,11 @@ namespace DesktopPet.Save
                 GameEventBus.Publish(new PetScaleChangedEvent(data.pet.scale));
             }
 
+            if (petState != null && data.pet.hasRuntimeStats)
+            {
+                petState.SetStats(data.pet.energy, data.pet.hunger);
+            }
+
             isApplyingLoadedData = false;
         }
 
@@ -241,6 +257,7 @@ namespace DesktopPet.Save
             subscriptions.Add(GameEventBus.Subscribe<WindowMovedEvent>(OnWindowMoved));
             subscriptions.Add(GameEventBus.Subscribe<PetScaleChangedEvent>(OnPetScaleChanged));
             subscriptions.Add(GameEventBus.Subscribe<DayNightModeChangedEvent>(OnDayNightModeChanged));
+            subscriptions.Add(GameEventBus.Subscribe<PetStatsChangedEvent>(OnPetStatsChanged));
         }
 
         private void OnWindowSettingsChanged(WindowSettingsChangedEvent gameEvent)
@@ -271,6 +288,47 @@ namespace DesktopPet.Save
         {
             data.appearance.dayNightMode = gameEvent.Mode;
             MarkDirty();
+        }
+
+        private void OnPetStatsChanged(PetStatsChangedEvent gameEvent)
+        {
+            data.pet.hasRuntimeStats = true;
+            data.pet.energy = Mathf.Clamp(gameEvent.Energy, 0f, 100f);
+            data.pet.hunger = Mathf.Clamp(gameEvent.Hunger, 0f, 100f);
+            if (Time.unscaledTime - lastPetStatsCheckpoint < PetStatsCheckpointSeconds) return;
+            lastPetStatsCheckpoint = Time.unscaledTime;
+            MarkDirty();
+        }
+
+        private static bool TryLoadFile(string path, out DesktopPetSaveData loaded, out string error)
+        {
+            loaded = null;
+            error = string.Empty;
+            if (!File.Exists(path)) { error = "文件不存在"; return false; }
+            try
+            {
+                loaded = JsonUtility.FromJson<DesktopPetSaveData>(File.ReadAllText(path));
+                if (loaded != null) return true;
+                error = "内容为空";
+            }
+            catch (Exception exception) { error = exception.Message; }
+            return false;
+        }
+
+        private void MigrateAndRepair()
+        {
+            var sourceVersion = Mathf.Max(1, data.saveVersion);
+            EnsureDataShape();
+            if (sourceVersion > CurrentSaveVersion)
+            {
+                Debug.LogWarning($"存档版本 {sourceVersion} 高于当前支持版本 {CurrentSaveVersion}，将只读取已知字段。");
+                return;
+            }
+            if (sourceVersion < 3)
+            {
+                data.pet.hasRuntimeStats = false;
+            }
+            data.saveVersion = CurrentSaveVersion;
         }
 
         private void EnsureDataShape()

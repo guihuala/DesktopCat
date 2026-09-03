@@ -36,7 +36,7 @@
 
 ### 简化实现
 
-- 猫外观只做 2 种毛色和 2 种体型，用于验证配置与换装管线。
+- 猫外观当前只做 2 种毛色，用于验证配置与换装管线；体型功能等待美术提供正式参数或独立模型后再恢复。
 - 房间只做猫窝、食盆、地毯、桌面、玩具 5 类锚点。
 - 家具准备约 12 件：8 件常规、3 件稀有、1 件珍藏。
 - 原型测试时将掉落周期从 30 分钟缩短到 1～3 分钟，并提供调试按钮。
@@ -191,4 +191,3 @@
 - [角色系统](https://my.feishu.cn/docx/YBU1dw6DJoU0nTxjynpcOEZPnle)
 - [挂机刷家具系统](https://my.feishu.cn/docx/LFKkdT5e1ofboExztvtcdLHGnub)
 - [桌宠系统设置](https://my.feishu.cn/docx/Lr1qdFDTnoWZfgxg3nYcFnkGnlx)
-

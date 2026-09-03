@@ -6,7 +6,7 @@ namespace DesktopPet.Save
     [Serializable]
     public class DesktopPetSaveData
     {
-        public int saveVersion = 2;
+        public int saveVersion = 3;
         public WindowSettingsData window = new WindowSettingsData();
         public PetSettingsData pet = new PetSettingsData();
         public AudioSettingsData audio = new AudioSettingsData();
@@ -34,6 +34,9 @@ namespace DesktopPet.Save
     public class PetSettingsData
     {
         public float scale = 0.55f;
+        public bool hasRuntimeStats;
+        public float energy = 70f;
+        public float hunger = 20f;
     }
 
     [Serializable]
@@ -53,6 +56,8 @@ namespace DesktopPet.Save
     public class AppearanceSettingsData
     {
         public int dayNightMode;
+        public bool hasChosenPet;
+        public int furStyle;
     }
 
     [Serializable]

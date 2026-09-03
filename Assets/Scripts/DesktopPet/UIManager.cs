@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using DesktopPet.Events;
 using DesktopPet.Rewards;
 using DesktopPet.UI;
+using DesktopPet.Pet.Presentation;
+using DesktopPet.Save;
 
 namespace DesktopPet
 {
@@ -33,6 +35,7 @@ namespace DesktopPet
         [SerializeField] private SettingsPanel settingsPanelPrefab;
         [SerializeField] private RewardClaimPanel rewardClaimPanelPrefab;
         [SerializeField] private FurniturePlacementPanel furniturePlacementPanelPrefab;
+        [SerializeField] private PetAppearancePanel petAppearancePanelPrefab;
         [SerializeField] private KeyCode closeTopPanelKey = KeyCode.Escape;
 
         private readonly Dictionary<string, UIPanel> panels = new Dictionary<string, UIPanel>();
@@ -41,6 +44,7 @@ namespace DesktopPet
         private SettingsPanel settingsPanel;
         private RewardClaimPanel rewardClaimPanel;
         private FurniturePlacementPanel furniturePlacementPanel;
+        private PetAppearancePanel petAppearancePanel;
         private bool clickThroughBeforePanel;
         private bool isManagingClickThrough;
 
@@ -92,6 +96,7 @@ namespace DesktopPet
             CreateSettingsPanel();
             CreateRewardClaimPanel();
             CreateFurniturePlacementPanel();
+            CreatePetAppearancePanel();
         }
 
         private void Update()
@@ -193,6 +198,8 @@ namespace DesktopPet
 
         public void ToggleFurniturePlacementPanel()
         {
+            if (!panels.ContainsKey("furniture-placement")) CreateFurniturePlacementPanel();
+            if (!panels.ContainsKey("furniture-placement")) return;
             TogglePanel("furniture-placement");
         }
 
@@ -246,9 +253,10 @@ namespace DesktopPet
                 Debug.LogWarning("UIManager needs a reward claim panel prefab.");
                 return;
             }
+            if (rewardClaimPanel != null) return;
             rewardClaimPanel = Instantiate(rewardClaimPanelPrefab, panelRoot, false);
-            rewardClaimPanel.Initialize(FindObjectOfType<FurnitureRewardClaimService>(), ToggleRewardClaimPanel, ToggleFurniturePlacementPanel);
             RegisterPanel("rewards", rewardClaimPanel);
+            rewardClaimPanel.Initialize(FindObjectOfType<FurnitureRewardClaimService>(), () => ClosePanel("rewards"), ToggleFurniturePlacementPanel);
         }
 
         private void CreateFurniturePlacementPanel()
@@ -260,9 +268,31 @@ namespace DesktopPet
                 Debug.LogWarning("UIManager needs a furniture placement panel prefab.");
                 return;
             }
+            if (furniturePlacementPanel != null)
+            {
+                if (!panels.ContainsKey("furniture-placement")) RegisterPanel("furniture-placement", furniturePlacementPanel);
+                return;
+            }
             furniturePlacementPanel = Instantiate(furniturePlacementPanelPrefab, panelRoot, false);
-            furniturePlacementPanel.Initialize(ToggleFurniturePlacementPanel);
             RegisterPanel("furniture-placement", furniturePlacementPanel);
+            furniturePlacementPanel.Initialize(() => ClosePanel("furniture-placement"));
+        }
+
+        private void CreatePetAppearancePanel()
+        {
+            if (petAppearancePanelPrefab == null)
+                petAppearancePanelPrefab = Resources.Load<PetAppearancePanel>("UI/PetAppearancePanel");
+            if (petAppearancePanelPrefab == null)
+            {
+                Debug.LogWarning("UIManager needs a pet appearance panel prefab.");
+                return;
+            }
+            petAppearancePanel = Instantiate(petAppearancePanelPrefab, panelRoot, false);
+            RegisterPanel("pet-appearance", petAppearancePanel);
+            petAppearancePanel.Initialize(petRoot != null ? petRoot.GetComponent<PetAppearanceController>() : null,
+                () => ClosePanel("pet-appearance"));
+            if (SaveManager.Data == null || SaveManager.Data.appearance == null || !SaveManager.Data.appearance.hasChosenPet)
+                OpenPanel("pet-appearance");
         }
 
         private void RegisterPanel(string panelId, UIPanel panel)

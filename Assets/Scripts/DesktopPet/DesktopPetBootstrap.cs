@@ -35,6 +35,8 @@ namespace DesktopPet
             GetOrAdd<PetStateController>(pet);
             GetOrAdd<PetMovementController>(pet);
             GetOrAdd<PetPresentationController>(pet);
+            var appearance = GetOrAdd<PetAppearanceController>(pet);
+            appearance.Initialize();
             GetOrAdd<PlayerActivityTracker>(gameObject);
             var brain = GetOrAdd<PetBehaviorBrain>(pet);
             brain.Initialize(tuning);

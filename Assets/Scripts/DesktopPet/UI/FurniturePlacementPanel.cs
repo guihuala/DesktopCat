@@ -82,12 +82,12 @@ namespace DesktopPet.UI
                         candidates.Add(item);
             }
             if (selectedIndex >= candidates.Count) selectedIndex = Mathf.Max(0, candidates.Count - 1);
-            anchorTitleText.text = $"正在布置：{AnchorName(selectedAnchor)}";
+            if (anchorTitleText != null) anchorTitleText.text = $"正在布置：{AnchorName(selectedAnchor)}";
             RefreshAnchorButtons();
             var placedId = placement != null ? placement.GetPlacedId(selectedAnchor) : string.Empty;
-            removeButton.interactable = !string.IsNullOrEmpty(placedId);
-            previousButton.interactable = candidates.Count > 1;
-            nextButton.interactable = candidates.Count > 1;
+            if (removeButton != null) removeButton.interactable = !string.IsNullOrEmpty(placedId);
+            if (previousButton != null) previousButton.interactable = candidates.Count > 1;
+            if (nextButton != null) nextButton.interactable = candidates.Count > 1;
             if (candidates.Count == 0)
             {
                 furnitureNameText.text = "还没有这类家具";
@@ -95,9 +95,9 @@ namespace DesktopPet.UI
                 descriptionText.text = string.Empty;
                 placeButton.interactable = false;
                 placeButtonText.text = "暂无可摆家具";
-                previewImage.color = new Color(0.25f, 0.28f, 0.34f, 1f);
-                previewGlyphText.text = "暂无";
-                placedStatusText.text = string.IsNullOrEmpty(placedId) ? "当前位置：空" : "当前位置：已有家具";
+                if (previewImage != null) previewImage.color = new Color(0.25f, 0.28f, 0.34f, 1f);
+                if (previewGlyphText != null) previewGlyphText.text = "暂无";
+                if (placedStatusText != null) placedStatusText.text = string.IsNullOrEmpty(placedId) ? "当前位置：空" : "当前位置：已有家具";
                 return;
             }
             var current = candidates[selectedIndex];
@@ -106,9 +106,9 @@ namespace DesktopPet.UI
             furnitureNameText.text = $"{current.displayName} · {RarityName(current.rarity)}";
             countText.text = $"拥有 {entry.TotalOwned}　已摆 {entry.PlacedCount}　可用 {entry.AvailableCount}";
             descriptionText.text = current.description;
-            previewImage.color = PreviewColor(current.id, current.rarity);
-            previewGlyphText.text = AnchorName(current.anchorType);
-            placedStatusText.text = isPlaced ? "● 当前正在使用" : string.IsNullOrEmpty(placedId) ? "○ 当前位置为空" : "○ 将替换当前家具";
+            if (previewImage != null) previewImage.color = PreviewColor(current.id, current.rarity);
+            if (previewGlyphText != null) previewGlyphText.text = AnchorName(current.anchorType);
+            if (placedStatusText != null) placedStatusText.text = isPlaced ? "● 当前正在使用" : string.IsNullOrEmpty(placedId) ? "○ 当前位置为空" : "○ 将替换当前家具";
             placeButton.interactable = isPlaced || entry.AvailableCount > 0;
             placeButtonText.text = isPlaced ? "已经摆在这里" : string.IsNullOrEmpty(placedId) ? "摆放" : "替换当前家具";
         }
@@ -140,7 +140,11 @@ namespace DesktopPet.UI
             if (placement == null) placement = FindObjectOfType<FurniturePlacementController>();
         }
 
-        private void RequestClose() => closeRequested?.Invoke();
+        private void RequestClose()
+        {
+            if (closeRequested != null) closeRequested.Invoke();
+            else Close();
+        }
 
         private void RefreshAnchorButtons()
         {
