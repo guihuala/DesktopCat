@@ -20,6 +20,11 @@ namespace DesktopPet.Pet.Behavior
         private float nextDecisionTime;
 
         public string CurrentBehaviourId => current != null ? current.Id : "None";
+        public float CurrentBehaviourDuration => state != null ? Mathf.Max(0f, Time.time - state.BehaviourStartedAt) : 0f;
+        public float SecondsUntilDecision => Mathf.Max(0f, nextDecisionTime - Time.time);
+        public PlayerActivityLevel ActivityLevel => context != null && context.Activity != null
+            ? context.Activity.Level
+            : PlayerActivityLevel.Idle;
 
         public void Initialize(PetTuningConfig tuning)
         {
@@ -57,9 +62,22 @@ namespace DesktopPet.Pet.Behavior
         public bool ForceBehaviour(string id)
         {
             var target = behaviours.Find(item => item.Id == id);
-            if (target == null || !target.CanEnter(context)) return false;
+            if (target == null || context == null) return false;
             SwitchTo(target);
             return true;
+        }
+
+        public string GetDebugCandidateSummary()
+        {
+            if (context == null) return "Brain not initialized";
+            var lines = new List<string>(behaviours.Count);
+            foreach (var candidate in behaviours)
+            {
+                var available = candidate == current || candidate.CanEnter(context);
+                var score = available ? candidate.GetScore(context).ToString("0.00") : "blocked";
+                lines.Add($"{candidate.Id}: {score}");
+            }
+            return string.Join("   ", lines);
         }
 
         public void RequestFeed()

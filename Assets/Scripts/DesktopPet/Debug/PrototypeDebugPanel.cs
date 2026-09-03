@@ -1,57 +1,245 @@
 using DesktopPet.Pet.Behavior;
+using DesktopPet.Pet.Movement;
 using DesktopPet.Pet.State;
+using DesktopPet.Presentation;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace DesktopPet
 {
+    /// <summary>仅在编辑器和开发包中创建的轻量中文 uGUI 测试面板。</summary>
     public sealed class PrototypeDebugPanel : MonoBehaviour
     {
         [SerializeField] private KeyCode toggleKey = KeyCode.F7;
+        [SerializeField] private KeyCode alternateToggleKey = KeyCode.BackQuote;
         private PetStateController state;
         private PetBehaviorBrain brain;
-        private bool visible;
-        private Rect windowRect = new Rect(12f, 12f, 270f, 255f);
+        private PetMovementController movement;
+        private DayNightController dayNight;
+        private GameObject panel;
+        private GameObject openButton;
+        private Text behaviourText;
+        private Text detailText;
+        private Text energyText;
+        private Text hungerText;
+        private Slider energySlider;
+        private Slider hungerSlider;
+        private Font font;
+
+        private static readonly Color PanelColor = new Color(0.12f, 0.14f, 0.18f, 0.96f);
+        private static readonly Color CardColor = new Color(0.19f, 0.22f, 0.28f, 1f);
+        private static readonly Color AccentColor = new Color(0.98f, 0.69f, 0.38f, 1f);
+        private static readonly Color TextColor = new Color(0.94f, 0.95f, 0.97f, 1f);
+        private static readonly Color MutedColor = new Color(0.68f, 0.72f, 0.78f, 1f);
 
         private void Awake()
         {
             state = GetComponent<PetStateController>();
             brain = GetComponent<PetBehaviorBrain>();
+            movement = GetComponent<PetMovementController>();
+            dayNight = FindObjectOfType<DayNightController>();
+            BuildUi();
         }
 
         private void Update()
         {
-            if (Input.GetKeyDown(toggleKey)) visible = !visible;
+            if (Input.GetKeyDown(toggleKey) || Input.GetKeyDown(alternateToggleKey)) SetVisible(!panel.activeSelf);
+            Refresh();
         }
 
-        private void OnGUI()
+        private void OnDestroy()
         {
-            if (!visible || state == null || brain == null) return;
-            windowRect = GUI.Window(GetInstanceID(), windowRect, DrawWindow, "Desktop Pet Debug (F7)");
+            if (panel != null) Destroy(panel.transform.root.gameObject);
         }
 
-        private void DrawWindow(int id)
+        private void BuildUi()
         {
-            GUILayout.Label($"Behaviour: {brain.CurrentBehaviourId}");
-            GUILayout.Label($"Energy: {state.Energy:0.0}   Hunger: {state.Hunger:0.0}");
-            var energy = GUILayout.HorizontalSlider(state.Energy, 0f, 100f);
-            var hunger = GUILayout.HorizontalSlider(state.Hunger, 0f, 100f);
-            if (!Mathf.Approximately(energy, state.Energy) || !Mathf.Approximately(hunger, state.Hunger))
-                state.SetStats(energy, hunger);
-            GUILayout.BeginHorizontal();
-            ForceButton("Idle"); ForceButton("Wander");
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            ForceButton("Nap"); ForceButton("Sleep");
-            GUILayout.EndHorizontal();
-            if (GUILayout.Button("Restore defaults")) state.SetStats(state.Tuning.initialEnergy, state.Tuning.initialHunger);
-            GUILayout.Label(state.IsUninterruptible ? "Locked by uninterruptible behaviour" : "Behaviour can be interrupted");
-            if (GUILayout.Button("Force call response")) brain.RequestCall(true);
-            GUI.DragWindow(new Rect(0f, 0f, windowRect.width, 24f));
+            font = Font.CreateDynamicFontFromOSFont(
+                new[] { "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Arial" }, 18);
+            var canvasObject = new GameObject("PrototypeDebugCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            var canvas = canvasObject.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 32000;
+            var scaler = canvasObject.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1280f, 720f);
+            scaler.matchWidthOrHeight = 0.5f;
+
+            panel = CreateBox("猫咪调试面板", canvasObject.transform, PanelColor);
+            SetRect(panel.GetComponent<RectTransform>(), new Vector2(18f, -18f), new Vector2(390f, 640f), new Vector2(0f, 1f));
+            var title = CreateText("状态测试", panel.transform, 24, TextColor, FontStyle.Bold, TextAnchor.MiddleLeft);
+            SetRect(title.rectTransform, new Vector2(24f, -18f), new Vector2(260f, 36f), new Vector2(0f, 1f));
+            var close = CreateButton("收起", panel.transform, () => SetVisible(false), CardColor);
+            SetRect(close.GetComponent<RectTransform>(), new Vector2(-20f, -18f), new Vector2(72f, 34f), new Vector2(1f, 1f));
+
+            behaviourText = CreateText("猫咪正在：待机", panel.transform, 22, AccentColor, FontStyle.Bold, TextAnchor.MiddleLeft);
+            SetRect(behaviourText.rectTransform, new Vector2(24f, -70f), new Vector2(342f, 38f), new Vector2(0f, 1f));
+            detailText = CreateText("正在读取状态……", panel.transform, 15, MutedColor, FontStyle.Normal, TextAnchor.UpperLeft);
+            SetRect(detailText.rectTransform, new Vector2(24f, -110f), new Vector2(342f, 44f), new Vector2(0f, 1f));
+
+            energyText = CreateText("精力 0", panel.transform, 16, TextColor, FontStyle.Normal, TextAnchor.MiddleLeft);
+            SetRect(energyText.rectTransform, new Vector2(24f, -165f), new Vector2(342f, 26f), new Vector2(0f, 1f));
+            energySlider = CreateSlider(panel.transform, new Vector2(24f, -195f));
+            energySlider.onValueChanged.AddListener(value => state.SetStats(value, state.Hunger));
+            hungerText = CreateText("饥饿 0", panel.transform, 16, TextColor, FontStyle.Normal, TextAnchor.MiddleLeft);
+            SetRect(hungerText.rectTransform, new Vector2(24f, -230f), new Vector2(342f, 26f), new Vector2(0f, 1f));
+            hungerSlider = CreateSlider(panel.transform, new Vector2(24f, -260f));
+            hungerSlider.onValueChanged.AddListener(value => state.SetStats(state.Energy, value));
+
+            var hint = CreateText("点击按钮，马上确认对应状态是否正常", panel.transform, 15, MutedColor, FontStyle.Normal, TextAnchor.MiddleLeft);
+            SetRect(hint.rectTransform, new Vector2(24f, -305f), new Vector2(342f, 28f), new Vector2(0f, 1f));
+            CreateStateButton("散步", "Wander", 24f, -344f);
+            CreateStateButton("打盹", "Nap", 201f, -344f);
+            CreateStateButton("睡觉", "Sleep", 24f, -392f);
+            CreateStateButton("吃饭", "Eat", 201f, -392f);
+            CreateStateButton("靠近镜头", "ApproachCamera", 24f, -440f);
+            CreateStateButton("恢复待机", "Idle", 201f, -440f);
+
+            var speedLabel = CreateText("观察速度", panel.transform, 15, MutedColor, FontStyle.Normal, TextAnchor.MiddleLeft);
+            SetRect(speedLabel.rectTransform, new Vector2(24f, -493f), new Vector2(100f, 26f), new Vector2(0f, 1f));
+            CreateSmallButton("正常", 112f, () => Time.timeScale = 1f);
+            CreateSmallButton("快进 ×5", 196f, () => Time.timeScale = 5f);
+            CreateSmallButton("快进 ×20", 284f, () => Time.timeScale = 20f);
+
+            var lightLabel = CreateText("昼夜效果", panel.transform, 15, MutedColor, FontStyle.Normal, TextAnchor.MiddleLeft);
+            SetRect(lightLabel.rectTransform, new Vector2(24f, -540f), new Vector2(100f, 26f), new Vector2(0f, 1f));
+            CreateSmallButton("跟随系统", 112f, -537f, () => SetDayNight(DayNightMode.FollowSystem));
+            CreateSmallButton("白天", 210f, -537f, () => SetDayNight(DayNightMode.Day));
+            CreateSmallButton("夜晚", 294f, -537f, () => SetDayNight(DayNightMode.Night));
+
+            openButton = CreateButton("打开状态测试", canvasObject.transform, () => SetVisible(true), AccentColor);
+            SetRect(openButton.GetComponent<RectTransform>(), new Vector2(18f, -18f), new Vector2(150f, 42f), new Vector2(0f, 1f));
+            openButton.SetActive(false);
         }
 
-        private void ForceButton(string behaviourId)
+        private void Refresh()
         {
-            if (GUILayout.Button(behaviourId)) brain.ForceBehaviour(behaviourId);
+            if (panel == null || !panel.activeSelf || state == null || brain == null) return;
+            behaviourText.text = $"猫咪正在：{BehaviourName(brain.CurrentBehaviourId)}";
+            var moving = movement != null && movement.IsMoving ? "正在移动" : "没有移动";
+            var locked = state.IsUninterruptible ? "暂时不能打断" : "可以切换状态";
+            detailText.text = $"已持续 {brain.CurrentBehaviourDuration:0} 秒 · {moving}\n{locked} · 鼠标状态：{ActivityName(brain.ActivityLevel.ToString())}";
+            energyText.text = $"精力  {state.Energy:0} / 100";
+            hungerText.text = $"饥饿  {state.Hunger:0} / 100";
+            energySlider.SetValueWithoutNotify(state.Energy);
+            hungerSlider.SetValueWithoutNotify(state.Hunger);
+        }
+
+        private void SetVisible(bool visible)
+        {
+            panel.SetActive(visible);
+            openButton.SetActive(!visible);
+        }
+
+        private void CreateStateButton(string label, string behaviourId, float x, float y)
+        {
+            var button = CreateButton(label, panel.transform, () => brain.ForceBehaviour(behaviourId), CardColor);
+            SetRect(button.GetComponent<RectTransform>(), new Vector2(x, y), new Vector2(165f, 40f), new Vector2(0f, 1f));
+        }
+
+        private void CreateSmallButton(string label, float x, UnityEngine.Events.UnityAction action)
+        {
+            CreateSmallButton(label, x, -490f, action);
+        }
+
+        private void CreateSmallButton(string label, float x, float y, UnityEngine.Events.UnityAction action)
+        {
+            var button = CreateButton(label, panel.transform, action, CardColor);
+            SetRect(button.GetComponent<RectTransform>(), new Vector2(x, y), new Vector2(label.Length > 4 ? 92f : 78f, 32f), new Vector2(0f, 1f));
+        }
+
+        private void SetDayNight(DayNightMode mode)
+        {
+            if (dayNight == null) dayNight = FindObjectOfType<DayNightController>();
+            if (dayNight != null) dayNight.SetMode(mode);
+        }
+
+        private Slider CreateSlider(Transform parent, Vector2 position)
+        {
+            var root = CreateBox("数值滑条", parent, CardColor);
+            SetRect(root.GetComponent<RectTransform>(), position, new Vector2(342f, 18f), new Vector2(0f, 1f));
+            var fill = CreateBox("当前值", root.transform, AccentColor);
+            var fillRect = fill.GetComponent<RectTransform>();
+            fillRect.anchorMin = Vector2.zero;
+            fillRect.anchorMax = Vector2.one;
+            fillRect.offsetMin = new Vector2(3f, 3f);
+            fillRect.offsetMax = new Vector2(-3f, -3f);
+            var slider = root.AddComponent<Slider>();
+            slider.minValue = 0f;
+            slider.maxValue = 100f;
+            slider.fillRect = fillRect;
+            slider.targetGraphic = fill.GetComponent<Image>();
+            slider.direction = Slider.Direction.LeftToRight;
+            return slider;
+        }
+
+        private GameObject CreateButton(string label, Transform parent, UnityEngine.Events.UnityAction action, Color color)
+        {
+            var root = CreateBox(label, parent, color);
+            var button = root.AddComponent<Button>();
+            button.targetGraphic = root.GetComponent<Image>();
+            button.onClick.AddListener(action);
+            var text = CreateText(label, root.transform, 16, TextColor, FontStyle.Normal, TextAnchor.MiddleCenter);
+            text.rectTransform.anchorMin = Vector2.zero;
+            text.rectTransform.anchorMax = Vector2.one;
+            text.rectTransform.offsetMin = Vector2.zero;
+            text.rectTransform.offsetMax = Vector2.zero;
+            return root;
+        }
+
+        private GameObject CreateBox(string name, Transform parent, Color color)
+        {
+            var item = new GameObject(name, typeof(RectTransform), typeof(Image));
+            item.transform.SetParent(parent, false);
+            item.GetComponent<Image>().color = color;
+            return item;
+        }
+
+        private Text CreateText(string value, Transform parent, int size, Color color, FontStyle style, TextAnchor alignment)
+        {
+            var item = new GameObject(value, typeof(RectTransform), typeof(Text));
+            item.transform.SetParent(parent, false);
+            var text = item.GetComponent<Text>();
+            text.font = font;
+            text.fontSize = size;
+            text.fontStyle = style;
+            text.color = color;
+            text.alignment = alignment;
+            text.text = value;
+            text.supportRichText = false;
+            return text;
+        }
+
+        private static void SetRect(RectTransform rect, Vector2 position, Vector2 size, Vector2 anchor)
+        {
+            rect.anchorMin = anchor;
+            rect.anchorMax = anchor;
+            rect.pivot = anchor;
+            rect.anchoredPosition = position;
+            rect.sizeDelta = size;
+        }
+
+        private static string BehaviourName(string id)
+        {
+            switch (id)
+            {
+                case "Wander": return "散步";
+                case "Nap": return "打盹";
+                case "Sleep": return "睡觉";
+                case "Eat": return "吃饭";
+                case "ApproachCamera": return "靠近镜头";
+                default: return "待机";
+            }
+        }
+
+        private static string ActivityName(string id)
+        {
+            switch (id)
+            {
+                case "Active": return "活跃";
+                case "Idle": return "暂时离开";
+                default: return "普通";
+            }
         }
     }
 }

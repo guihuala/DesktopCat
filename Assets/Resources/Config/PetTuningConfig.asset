@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0169baa33ee940e9aedfcb9000ac458, type: 3}
+  m_Name: PetTuningConfig
+  m_EditorClassIdentifier:
+  initialEnergy: 80
+  initialHunger: 15
+  hungerGainPerMinute: 1
+  wanderEnergyCostPerMinute: 4
+  napEnergyRecoveryPerMinute: 10
+  sleepEnergyRecoveryPerMinute: 20
+  napEnterEnergy: 45
+  napExitEnergy: 65
+  sleepEnterEnergy: 18
+  sleepExitEnergy: 80
+  decisionInterval: 3
+  minimumBehaviourDuration: 6
+  walkSpeed: 0.65
+  turnSpeed: 360
+  arrivalDistance: 0.08
+  movementTimeout: 12
+  wanderRadius: 1.5
+  screenSafeMargin: 0.04
+  constrainToRoom: 1
+  roomCenter: {x: 0, y: 0.15}
+  roomHalfExtents: {x: 1.65, y: 1.25}
+  clickCooldown: 0.75
+  feedAmountPerMinute: 60
+  eatingExitHunger: 10
+  callResponseChance: 0.75
+  sleepingCallResponseChance: 0.1
+  approachCooldown: 60
+  activeApproachBonus: 1.25
+  normalApproachBonus: 0.15

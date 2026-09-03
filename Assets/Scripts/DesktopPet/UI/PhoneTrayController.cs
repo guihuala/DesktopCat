@@ -6,7 +6,6 @@ namespace DesktopPet.UI
 {
     public sealed class PhoneTrayController : MonoBehaviour
     {
-        [SerializeField] private KeyCode toggleKey = KeyCode.R;
         private PetInteractionController interaction;
         private WindowController windowController;
         private UIManager uiManager;
@@ -33,7 +32,6 @@ namespace DesktopPet.UI
 
         private void Update()
         {
-            if (UnityEngine.Input.GetKeyDown(toggleKey)) Toggle();
             if (panel != null && panel.activeSelf && UnityEngine.Input.GetKeyDown(KeyCode.Escape)) Close();
         }
 
