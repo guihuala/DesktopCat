@@ -29,6 +29,11 @@ namespace DesktopPet.Save
         public static DesktopPetSaveData Data => instance != null ? instance.data : null;
         public static string SavePath => instance != null ? instance.savePath : string.Empty;
 
+        public static void MarkDataDirty()
+        {
+            if (instance != null) instance.MarkDirty();
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Bootstrap()
         {
@@ -293,6 +298,26 @@ namespace DesktopPet.Save
             if (data.appearance == null)
             {
                 data.appearance = new AppearanceSettingsData();
+            }
+
+            if (data.onlineReward == null)
+            {
+                data.onlineReward = new OnlineRewardSaveData();
+            }
+
+            if (data.furnitureInventory == null)
+            {
+                data.furnitureInventory = new FurnitureInventorySaveData();
+            }
+
+            if (data.furnitureInventory.items == null)
+            {
+                data.furnitureInventory.items = new System.Collections.Generic.List<FurnitureItemSaveData>();
+            }
+
+            if (data.furnitureInventory.discoveredIds == null)
+            {
+                data.furnitureInventory.discoveredIds = new System.Collections.Generic.List<string>();
             }
         }
 

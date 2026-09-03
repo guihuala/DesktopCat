@@ -140,4 +140,36 @@ namespace DesktopPet.Events
         public readonly int Mode;
         public DayNightModeChangedEvent(int mode) { Mode = mode; }
     }
+
+    public readonly struct OnlineRewardProgressChangedEvent : IGameEvent
+    {
+        public readonly double ElapsedSeconds;
+        public readonly double IntervalSeconds;
+        public readonly int PendingRewards;
+        public readonly int MaxPendingRewards;
+
+        public OnlineRewardProgressChangedEvent(double elapsedSeconds, double intervalSeconds, int pendingRewards, int maxPendingRewards)
+        {
+            ElapsedSeconds = elapsedSeconds;
+            IntervalSeconds = intervalSeconds;
+            PendingRewards = pendingRewards;
+            MaxPendingRewards = maxPendingRewards;
+        }
+    }
+
+    public readonly struct FurnitureInventoryChangedEvent : IGameEvent
+    {
+        public readonly string FurnitureId;
+        public readonly int TotalOwned;
+        public readonly int PlacedCount;
+        public readonly bool FirstDiscovery;
+
+        public FurnitureInventoryChangedEvent(string furnitureId, int totalOwned, int placedCount, bool firstDiscovery)
+        {
+            FurnitureId = furnitureId;
+            TotalOwned = totalOwned;
+            PlacedCount = placedCount;
+            FirstDiscovery = firstDiscovery;
+        }
+    }
 }

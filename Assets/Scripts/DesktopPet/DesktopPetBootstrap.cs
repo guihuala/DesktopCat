@@ -8,6 +8,8 @@ using DesktopPet.Activity;
 using DesktopPet.Pet.Interaction;
 using DesktopPet.UI;
 using DesktopPet.Presentation;
+using DesktopPet.Rewards;
+using DesktopPet.Furniture;
 
 namespace DesktopPet
 {
@@ -40,6 +42,9 @@ namespace DesktopPet
             interaction.Initialize(brain, tuning);
             GetOrAdd<PetFeedbackPresenter>(pet);
             GetOrAdd<DayNightController>(gameObject);
+            GetOrAdd<OnlineRewardService>(gameObject);
+            GetOrAdd<FurnitureDropService>(gameObject);
+            GetOrAdd<FurnitureInventory>(gameObject);
             var tray = FindObjectOfType<PhoneTrayController>();
             if (tray != null) tray.Initialize(interaction);
             else Debug.LogError("PhoneTrayController is missing from the scene HUD.");

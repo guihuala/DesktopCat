@@ -2,6 +2,8 @@ using DesktopPet.Pet.Behavior;
 using DesktopPet.Pet.Movement;
 using DesktopPet.Pet.State;
 using DesktopPet.Presentation;
+using DesktopPet.Rewards;
+using DesktopPet.Furniture;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,6 +18,8 @@ namespace DesktopPet
         private PetBehaviorBrain brain;
         private PetMovementController movement;
         private DayNightController dayNight;
+        private OnlineRewardService onlineReward;
+        private FurnitureDropService furnitureDrop;
         private GameObject panel;
         private GameObject openButton;
         private Text behaviourText;
@@ -24,6 +28,8 @@ namespace DesktopPet
         private Text hungerText;
         private Slider energySlider;
         private Slider hungerSlider;
+        private Text rewardText;
+        private Text dropResultText;
         private Font font;
 
         private static readonly Color PanelColor = new Color(0.12f, 0.14f, 0.18f, 0.96f);
@@ -38,6 +44,8 @@ namespace DesktopPet
             brain = GetComponent<PetBehaviorBrain>();
             movement = GetComponent<PetMovementController>();
             dayNight = FindObjectOfType<DayNightController>();
+            onlineReward = FindObjectOfType<OnlineRewardService>();
+            furnitureDrop = FindObjectOfType<FurnitureDropService>();
             BuildUi();
         }
 
@@ -66,7 +74,7 @@ namespace DesktopPet
             scaler.matchWidthOrHeight = 0.5f;
 
             panel = CreateBox("猫咪调试面板", canvasObject.transform, PanelColor);
-            SetRect(panel.GetComponent<RectTransform>(), new Vector2(18f, -18f), new Vector2(390f, 640f), new Vector2(0f, 1f));
+            SetRect(panel.GetComponent<RectTransform>(), new Vector2(18f, -18f), new Vector2(390f, 690f), new Vector2(0f, 1f));
             var title = CreateText("状态测试", panel.transform, 24, TextColor, FontStyle.Bold, TextAnchor.MiddleLeft);
             SetRect(title.rectTransform, new Vector2(24f, -18f), new Vector2(260f, 36f), new Vector2(0f, 1f));
             var close = CreateButton("收起", panel.transform, () => SetVisible(false), CardColor);
@@ -107,6 +115,17 @@ namespace DesktopPet
             CreateSmallButton("白天", 210f, -537f, () => SetDayNight(DayNightMode.Day));
             CreateSmallButton("夜晚", 294f, -537f, () => SetDayNight(DayNightMode.Night));
 
+            var rewardLabel = CreateText("家具计时", panel.transform, 15, MutedColor, FontStyle.Normal, TextAnchor.MiddleLeft);
+            SetRect(rewardLabel.rectTransform, new Vector2(24f, -582f), new Vector2(90f, 26f), new Vector2(0f, 1f));
+            rewardText = CreateText("正在读取……", panel.transform, 15, TextColor, FontStyle.Normal, TextAnchor.MiddleLeft);
+            SetRect(rewardText.rectTransform, new Vector2(104f, -582f), new Vector2(150f, 26f), new Vector2(0f, 1f));
+            CreateSmallButton("增加10分钟", 250f, -579f, () => AddRewardMinutes(10));
+            CreateSmallButton("增加30分钟", 24f, -620f, () => AddRewardMinutes(30));
+            CreateSmallButton("测试抽一次", 126f, -620f, TestSingleDrop);
+            CreateSmallButton("模拟1000次", 228f, -620f, TestDropDistribution);
+            dropResultText = CreateText("抽取测试不会消耗待领取数量", panel.transform, 14, MutedColor, FontStyle.Normal, TextAnchor.MiddleLeft);
+            SetRect(dropResultText.rectTransform, new Vector2(24f, -657f), new Vector2(342f, 24f), new Vector2(0f, 1f));
+
             openButton = CreateButton("打开状态测试", canvasObject.transform, () => SetVisible(true), AccentColor);
             SetRect(openButton.GetComponent<RectTransform>(), new Vector2(18f, -18f), new Vector2(150f, 42f), new Vector2(0f, 1f));
             openButton.SetActive(false);
@@ -123,6 +142,14 @@ namespace DesktopPet
             hungerText.text = $"饥饿  {state.Hunger:0} / 100";
             energySlider.SetValueWithoutNotify(state.Energy);
             hungerSlider.SetValueWithoutNotify(state.Hunger);
+            if (onlineReward == null) onlineReward = FindObjectOfType<OnlineRewardService>();
+            if (rewardText != null && onlineReward != null)
+            {
+                var remaining = onlineReward.SecondsUntilNext;
+                rewardText.text = onlineReward.PendingRewards >= onlineReward.MaxPendingRewards
+                    ? $"待领取 {onlineReward.PendingRewards}/{onlineReward.MaxPendingRewards} · 已满"
+                    : $"待领取 {onlineReward.PendingRewards}/{onlineReward.MaxPendingRewards} · 还需 {remaining / 60d:0.0} 分钟";
+            }
         }
 
         private void SetVisible(bool visible)
@@ -152,6 +179,39 @@ namespace DesktopPet
         {
             if (dayNight == null) dayNight = FindObjectOfType<DayNightController>();
             if (dayNight != null) dayNight.SetMode(mode);
+        }
+
+        private void AddRewardMinutes(int minutes)
+        {
+            if (onlineReward == null) onlineReward = FindObjectOfType<OnlineRewardService>();
+            if (onlineReward != null) onlineReward.AddDebugSeconds(minutes * 60d);
+        }
+
+        private void TestSingleDrop()
+        {
+            if (furnitureDrop == null) furnitureDrop = FindObjectOfType<FurnitureDropService>();
+            var item = furnitureDrop != null ? furnitureDrop.DrawOne() : null;
+            dropResultText.text = item != null
+                ? $"抽到：{item.displayName}（{RarityName(item.rarity)}）"
+                : "抽取失败，请检查家具配置";
+        }
+
+        private void TestDropDistribution()
+        {
+            if (furnitureDrop == null) furnitureDrop = FindObjectOfType<FurnitureDropService>();
+            dropResultText.text = furnitureDrop != null
+                ? furnitureDrop.Simulate(1000, 20260903).ToString()
+                : "模拟失败，请检查家具配置";
+        }
+
+        private static string RarityName(FurnitureRarity rarity)
+        {
+            switch (rarity)
+            {
+                case FurnitureRarity.Rare: return "稀有";
+                case FurnitureRarity.Collectible: return "珍藏";
+                default: return "普通";
+            }
         }
 
         private Slider CreateSlider(Transform parent, Vector2 position)

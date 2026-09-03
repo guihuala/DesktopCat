@@ -1,0 +1,111 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5fbef384b594365862ce5bb77d6365a, type: 3}
+  m_Name: FurnitureCatalog
+  m_EditorClassIdentifier:
+  items:
+  - id: common_soft_bed
+    displayName: 柔软猫窝
+    rarity: 0
+    anchorType: 0
+    prefab: {fileID: 0}
+    icon: {fileID: 0}
+    description: 一张适合长时间打盹的柔软猫窝。
+    tags: [休息, 柔软]
+  - id: common_wood_bowl
+    displayName: 木纹食盆
+    rarity: 0
+    anchorType: 1
+    prefab: {fileID: 0}
+    icon: {fileID: 0}
+    description: 朴素耐用的木纹食盆。
+    tags: [进食]
+  - id: common_round_rug
+    displayName: 圆圆地毯
+    rarity: 0
+    anchorType: 2
+    prefab: {fileID: 0}
+    icon: {fileID: 0}
+    description: 猫咪喜欢在上面伸懒腰。
+    tags: [地毯]
+  - id: common_yarn_ball
+    displayName: 毛线球
+    rarity: 0
+    anchorType: 4
+    prefab: {fileID: 0}
+    icon: {fileID: 0}
+    description: 一颗普通但很受欢迎的毛线球。
+    tags: [玩具]
+  - id: common_cardboard_box
+    displayName: 纸箱
+    rarity: 0
+    anchorType: 3
+    prefab: {fileID: 0}
+    icon: {fileID: 0}
+    description: 没有猫能拒绝一个大小刚好的纸箱。
+    tags: [桌面, 藏身]
+  - id: common_mouse_toy
+    displayName: 小鼠玩具
+    rarity: 0
+    anchorType: 4
+    prefab: {fileID: 0}
+    icon: {fileID: 0}
+    description: 会让猫咪忍不住扑过去的小玩具。
+    tags: [玩具]
+  - id: common_leaf_cushion
+    displayName: 叶子坐垫
+    rarity: 0
+    anchorType: 2
+    prefab: {fileID: 0}
+    icon: {fileID: 0}
+    description: 像一片大叶子的轻软坐垫。
+    tags: [地毯, 休息]
+  - id: common_tin_bowl
+    displayName: 搪瓷食盆
+    rarity: 0
+    anchorType: 1
+    prefab: {fileID: 0}
+    icon: {fileID: 0}
+    description: 带一点复古气息的小食盆。
+    tags: [进食]
+  - id: rare_cloud_bed
+    displayName: 云朵猫窝
+    rarity: 1
+    anchorType: 0
+    prefab: {fileID: 0}
+    icon: {fileID: 0}
+    description: 看起来像睡在一小片云上。
+    tags: [休息, 稀有]
+  - id: rare_fish_lamp
+    displayName: 小鱼夜灯
+    rarity: 1
+    anchorType: 3
+    prefab: {fileID: 0}
+    icon: {fileID: 0}
+    description: 发出温柔暖光的小鱼灯。
+    tags: [桌面, 灯具, 稀有]
+  - id: rare_bell_ball
+    displayName: 铃铛球
+    rarity: 1
+    anchorType: 4
+    prefab: {fileID: 0}
+    icon: {fileID: 0}
+    description: 滚动时会发出清脆声音。
+    tags: [玩具, 稀有]
+  - id: collectible_moon_bed
+    displayName: 月亮猫窝
+    rarity: 2
+    anchorType: 0
+    prefab: {fileID: 0}
+    icon: {fileID: 0}
+    description: 像月牙一样环抱猫咪的珍藏猫窝。
+    tags: [休息, 珍藏]

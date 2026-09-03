@@ -1,16 +1,19 @@
 using System;
+using System.Collections.Generic;
 
 namespace DesktopPet.Save
 {
     [Serializable]
     public class DesktopPetSaveData
     {
-        public int saveVersion = 1;
+        public int saveVersion = 2;
         public WindowSettingsData window = new WindowSettingsData();
         public PetSettingsData pet = new PetSettingsData();
         public AudioSettingsData audio = new AudioSettingsData();
         public PrivacySettingsData privacy = new PrivacySettingsData();
         public AppearanceSettingsData appearance = new AppearanceSettingsData();
+        public OnlineRewardSaveData onlineReward = new OnlineRewardSaveData();
+        public FurnitureInventorySaveData furnitureInventory = new FurnitureInventorySaveData();
     }
 
     [Serializable]
@@ -49,5 +52,27 @@ namespace DesktopPet.Save
     public class AppearanceSettingsData
     {
         public int dayNightMode;
+    }
+
+    [Serializable]
+    public class OnlineRewardSaveData
+    {
+        public double elapsedSeconds;
+        public int pendingRewards;
+    }
+
+    [Serializable]
+    public class FurnitureItemSaveData
+    {
+        public string furnitureId;
+        public int totalOwned;
+        public int placedCount;
+    }
+
+    [Serializable]
+    public class FurnitureInventorySaveData
+    {
+        public List<FurnitureItemSaveData> items = new List<FurnitureItemSaveData>();
+        public List<string> discoveredIds = new List<string>();
     }
 }
