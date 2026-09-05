@@ -38,6 +38,8 @@ namespace DesktopPet.Pet.State
         private void Update()
         {
             AddHunger(tuning.hungerGainPerMinute * Time.deltaTime / 60f);
+            if (CurrentBehaviour != PetBehaviourId.Nap && CurrentBehaviour != PetBehaviourId.Sleep)
+                AddEnergy(-tuning.awakeEnergyCostPerMinute * Time.deltaTime / 60f);
         }
 
         public void SetStats(float newEnergy, float newHunger)

@@ -17,6 +17,7 @@ namespace DesktopPet.Pet.Behavior
         public bool CallRequested;
         public bool ForceCallResponse;
         public float LastApproachTime = float.NegativeInfinity;
+        public float LastNapTime = float.NegativeInfinity;
 
         public PetContext(PetStateController state, PetMovementController movement, PetPresentationController presentation, PetTuningConfig tuning)
         { State = state; Movement = movement; Presentation = presentation; Tuning = tuning; }

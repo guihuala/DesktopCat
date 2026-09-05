@@ -12,7 +12,7 @@ namespace DesktopPet.Save
     {
         private const string SaveFileName = "desktop_pet_save.json";
         private const float AutoSaveDelay = 0.5f;
-        private const int CurrentSaveVersion = 3;
+        private const int CurrentSaveVersion = 4;
         private const float PetStatsCheckpointSeconds = 10f;
 
         private static SaveManager instance;
@@ -327,6 +327,13 @@ namespace DesktopPet.Save
             if (sourceVersion < 3)
             {
                 data.pet.hasRuntimeStats = false;
+            }
+            if (sourceVersion < 4)
+            {
+                // The preview-only onboarding flow replaced the earlier version
+                // that selected the live gameplay cat. Re-run this one step only;
+                // furniture, settings, and all other progress remain untouched.
+                data.appearance.hasChosenPet = false;
             }
             data.saveVersion = CurrentSaveVersion;
         }

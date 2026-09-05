@@ -76,6 +76,27 @@ namespace DesktopPet.Furniture
             return true;
         }
 
+        public bool TryExchange(string sourceId, int sourceAmount, string rewardId, out bool firstDiscovery)
+        {
+            firstDiscovery = false;
+            if (sourceAmount <= 0 || !IsKnownFurniture(sourceId) || !IsKnownFurniture(rewardId)) return false;
+            if (!entries.TryGetValue(sourceId, out var source) || source.TotalOwned - source.PlacedCount < sourceAmount) return false;
+            if (!entries.TryGetValue(rewardId, out var reward))
+            {
+                reward = new MutableEntry();
+                entries.Add(rewardId, reward);
+            }
+
+            source.TotalOwned -= sourceAmount;
+            reward.TotalOwned++;
+            firstDiscovery = discoveredIds.Add(rewardId);
+            Persist();
+            Publish(sourceId, source, false);
+            if (sourceId != rewardId) Publish(rewardId, reward, firstDiscovery);
+            else Publish(sourceId, source, firstDiscovery);
+            return true;
+        }
+
         public bool TryReserveForPlacement(string furnitureId)
         {
             if (!entries.TryGetValue(furnitureId, out var entry) || entry.TotalOwned - entry.PlacedCount <= 0) return false;

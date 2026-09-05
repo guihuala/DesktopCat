@@ -62,15 +62,30 @@ namespace DesktopPet.UI
             else
             {
                 var builder = new StringBuilder("本次获得：\n");
+                FurnitureDefinition bestFirstDiscovery = null;
                 foreach (var result in results)
                 {
                     builder.Append("• ").Append(result.Furniture.displayName)
                         .Append(" · ").Append(RarityName(result.Furniture.rarity));
                     if (result.FirstDiscovery) builder.Append("  新发现！");
+                    if (result.FirstDiscovery && result.Furniture.rarity != FurnitureRarity.Common &&
+                        (bestFirstDiscovery == null || (int)result.Furniture.rarity > (int)bestFirstDiscovery.rarity))
+                        bestFirstDiscovery = result.Furniture;
                     builder.AppendLine();
                 }
                 resultText.text = builder.ToString();
-                GameEventBus.Publish(new PetFeedbackEvent($"获得了 {results.Count} 件家具！", true));
+                if (bestFirstDiscovery != null)
+                {
+                    var rarity = RarityName(bestFirstDiscovery.rarity);
+                    GameEventBus.Publish(new PetFeedbackEvent(
+                        $"首次发现{rarity}家具：{bestFirstDiscovery.displayName}！", true,
+                        FeedbackPriority.Important, 4f));
+                }
+                else
+                {
+                    GameEventBus.Publish(new PetFeedbackEvent(
+                        $"获得了 {results.Count} 件家具！", true, FeedbackPriority.Normal, 2.5f));
+                }
             }
             Refresh();
         }

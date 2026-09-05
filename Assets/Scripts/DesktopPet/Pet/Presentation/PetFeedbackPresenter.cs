@@ -1,6 +1,7 @@
 using System;
 using DG.Tweening;
 using DesktopPet.Events;
+using DesktopPet.Save;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,7 @@ namespace DesktopPet.Pet.Presentation
         private IDisposable interactionSubscription;
         private IDisposable scaleSubscription;
         private Sequence reaction;
+        private Tween bubbleTween;
         private Vector3 restingScale;
         [SerializeField, Range(0f, 0.15f)] private float squashAmount = 0.045f;
         [SerializeField, Min(0.05f)] private float pressDuration = 0.1f;
@@ -19,12 +21,17 @@ namespace DesktopPet.Pet.Presentation
         private string message;
         private float hideAt;
         private bool positive;
+        private FeedbackPriority currentPriority;
+        private string previousMessage;
+        private float previousMessageAt = -10f;
         private Canvas canvas;
         private RectTransform bubbleRoot;
         private CanvasGroup bubbleGroup;
         private Image bubbleBackground;
         private Text bubbleText;
         private Renderer[] petRenderers;
+        private AudioSource feedbackAudio;
+        private AudioClip discoveryClip;
 
         private static readonly Color PositiveColor = new Color(1f, 0.86f, 0.9f, 0.96f);
         private static readonly Color NeutralColor = new Color(0.84f, 0.92f, 1f, 0.96f);
@@ -36,6 +43,10 @@ namespace DesktopPet.Pet.Presentation
             interactionSubscription = GameEventBus.Subscribe<PetInteractionEvent>(OnInteraction);
             // Settings has already applied the new scale before publishing this event.
             scaleSubscription = GameEventBus.Subscribe<PetScaleChangedEvent>(_ => StopReaction(false));
+            feedbackAudio = GetComponent<AudioSource>();
+            if (feedbackAudio == null) feedbackAudio = gameObject.AddComponent<AudioSource>();
+            feedbackAudio.playOnAwake = false;
+            feedbackAudio.loop = false;
         }
 
         private void OnDisable()
@@ -44,21 +55,30 @@ namespace DesktopPet.Pet.Presentation
             interactionSubscription?.Dispose(); interactionSubscription = null;
             scaleSubscription?.Dispose(); scaleSubscription = null;
             StopReaction(true);
+            bubbleTween?.Kill(); bubbleTween = null;
             if (bubbleRoot != null) Destroy(bubbleRoot.gameObject);
         }
         private void OnFeedback(PetFeedbackEvent item)
         {
+            var now = Time.unscaledTime;
+            if (item.Message == previousMessage && now - previousMessageAt < 0.75f) return;
+            if (bubbleRoot != null && bubbleRoot.gameObject.activeSelf && now < hideAt && item.Priority < currentPriority) return;
             EnsureBubble();
             if (bubbleRoot == null) return;
             message = item.Message;
             positive = item.Positive;
-            hideAt = Time.unscaledTime + 2.5f;
+            currentPriority = item.Priority;
+            previousMessage = item.Message;
+            previousMessageAt = now;
+            hideAt = now + Mathf.Clamp(item.Duration, 1.2f, 4.5f);
             bubbleText.text = message;
             bubbleBackground.color = positive ? PositiveColor : NeutralColor;
             bubbleGroup.alpha = 1f;
             bubbleRoot.gameObject.SetActive(true);
             bubbleRoot.localScale = Vector3.one * 0.86f;
-            bubbleRoot.DOScale(Vector3.one, 0.18f).SetEase(Ease.OutBack).SetUpdate(true);
+            bubbleTween?.Kill();
+            bubbleTween = bubbleRoot.DOScale(Vector3.one, 0.18f).SetEase(Ease.OutBack).SetUpdate(true);
+            if (item.Priority == FeedbackPriority.Important) PlayDiscoverySound();
         }
 
         private void OnInteraction(PetInteractionEvent item)
@@ -88,6 +108,7 @@ namespace DesktopPet.Pet.Presentation
             if (string.IsNullOrEmpty(message) || Time.unscaledTime >= hideAt)
             {
                 bubbleRoot.gameObject.SetActive(false);
+                currentPriority = FeedbackPriority.Ambient;
                 return;
             }
 
@@ -127,6 +148,34 @@ namespace DesktopPet.Pet.Presentation
             bubbleBackground = instance.GetComponent<Image>();
             bubbleText = instance.GetComponentInChildren<Text>();
             instance.SetActive(false);
+        }
+
+        private void PlayDiscoverySound()
+        {
+            if (feedbackAudio == null) return;
+            if (discoveryClip == null) discoveryClip = CreateDiscoveryClip();
+            var audio = SaveManager.Data != null ? SaveManager.Data.audio : null;
+            var master = audio != null ? Mathf.Clamp01(audio.masterVolume) : 1f;
+            var sfx = audio != null ? Mathf.Clamp01(audio.sfxVolume) : 1f;
+            feedbackAudio.Stop();
+            feedbackAudio.PlayOneShot(discoveryClip, 0.28f * master * sfx);
+        }
+
+        private static AudioClip CreateDiscoveryClip()
+        {
+            const int sampleRate = 22050;
+            const float duration = 0.36f;
+            var samples = new float[Mathf.CeilToInt(sampleRate * duration)];
+            for (var i = 0; i < samples.Length; i++)
+            {
+                var time = i / (float)sampleRate;
+                var frequency = time < duration * 0.48f ? 523.25f : 659.25f;
+                var envelope = Mathf.Sin(Mathf.PI * i / samples.Length);
+                samples[i] = Mathf.Sin(2f * Mathf.PI * frequency * time) * envelope * 0.22f;
+            }
+            var clip = AudioClip.Create("FurnitureDiscovery", samples.Length, 1, sampleRate, false);
+            clip.SetData(samples, 0);
+            return clip;
         }
 
         private Vector3 GetBubbleWorldPoint()

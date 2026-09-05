@@ -15,9 +15,11 @@ namespace DesktopPet.Pet.Behavior
         [SerializeField] private PetMovementController movement;
         [SerializeField] private PetPresentationController presentation;
         private readonly List<IPetBehavior> behaviours = new List<IPetBehavior>();
+        private readonly Dictionary<string, int> behaviourCounts = new Dictionary<string, int>();
         private PetContext context;
         private IPetBehavior current;
         private float nextDecisionTime;
+        private float observationStartedAt;
 
         public string CurrentBehaviourId => current != null ? current.Id : "None";
         public float CurrentBehaviourDuration => state != null ? Mathf.Max(0f, Time.time - state.BehaviourStartedAt) : 0f;
@@ -35,7 +37,10 @@ namespace DesktopPet.Pet.Behavior
             movement.Initialize(tuning);
             context = new PetContext(state, movement, presentation, tuning);
             context.Activity = FindObjectOfType<PlayerActivityTracker>();
+            context.LastApproachTime = Time.time;
             behaviours.Clear();
+            behaviourCounts.Clear();
+            observationStartedAt = Time.time;
             behaviours.Add(new SleepBehavior());
             behaviours.Add(new EatBehavior());
             behaviours.Add(new ApproachCameraBehavior());
@@ -80,6 +85,14 @@ namespace DesktopPet.Pet.Behavior
             return string.Join("   ", lines);
         }
 
+        public string GetObservationSummary()
+        {
+            var minutes = Mathf.Max(0f, Time.time - observationStartedAt) / 60f;
+            return $"观察 {minutes:0.0}分 · 待{Count("Idle")} 散{Count("Wander")} 盹{Count("Nap")} 睡{Count("Sleep")} 吃{Count("Eat")} 近{Count("ApproachCamera")}";
+        }
+
+        private int Count(string id) => behaviourCounts.TryGetValue(id, out var value) ? value : 0;
+
         public void RequestFeed()
         {
             context.FeedRequested = true;
@@ -121,6 +134,7 @@ namespace DesktopPet.Pet.Behavior
             current?.Exit(context);
             current = next;
             current.Enter(context);
+            behaviourCounts[next.Id] = Count(next.Id) + 1;
             nextDecisionTime = Time.time + Mathf.Max(context.Tuning.decisionInterval, context.Tuning.minimumBehaviourDuration);
         }
 
@@ -143,7 +157,7 @@ namespace DesktopPet.Pet.Behavior
             public override string Id => "Idle";
             public override PetBehaviourId StateId => PetBehaviourId.Idle;
             public override float GetScore(PetContext context) => 0.1f;
-            public override void Enter(PetContext context) { base.Enter(context); context.Movement.Stop(); until = Time.time + Random.Range(3f, 7f); }
+            public override void Enter(PetContext context) { base.Enter(context); context.Movement.Stop(); until = Time.time + Random.Range(context.Tuning.idleDurationMin, context.Tuning.idleDurationMax); }
             public override void Tick(PetContext context, float deltaTime) { }
             public override bool IsComplete(PetContext context) => Time.time >= until;
         }
@@ -152,8 +166,8 @@ namespace DesktopPet.Pet.Behavior
         {
             public override string Id => "Wander";
             public override PetBehaviourId StateId => PetBehaviourId.Wander;
-            public override bool CanEnter(PetContext context) => context.State.Energy > context.Tuning.napEnterEnergy;
-            public override float GetScore(PetContext context) => Mathf.InverseLerp(context.Tuning.napEnterEnergy, 100f, context.State.Energy) + 0.15f;
+            public override bool CanEnter(PetContext context) => context.State.Energy > context.Tuning.sleepEnterEnergy;
+            public override float GetScore(PetContext context) => Mathf.InverseLerp(context.Tuning.sleepEnterEnergy, 100f, context.State.Energy) + 0.15f;
             public override void Enter(PetContext context) { base.Enter(context); context.Movement.MoveToRandomPoint(); }
             public override void Tick(PetContext context, float deltaTime) => context.State.AddEnergy(-context.Tuning.wanderEnergyCostPerMinute * deltaTime / 60f);
             public override bool IsComplete(PetContext context) => !context.Movement.IsMoving;
@@ -164,9 +178,9 @@ namespace DesktopPet.Pet.Behavior
         {
             public override string Id => "Nap";
             public override PetBehaviourId StateId => PetBehaviourId.Nap;
-            public override bool CanEnter(PetContext context) => context.State.Energy <= context.Tuning.napEnterEnergy && context.State.Energy > context.Tuning.sleepEnterEnergy;
+            public override bool CanEnter(PetContext context) => context.State.Energy <= context.Tuning.napEnterEnergy && context.State.Energy > context.Tuning.sleepEnterEnergy && Time.time - context.LastNapTime >= context.Tuning.napCooldown;
             public override float GetScore(PetContext context) => 1f - context.State.Energy / 100f;
-            public override void Enter(PetContext context) { base.Enter(context); context.Movement.Stop(); }
+            public override void Enter(PetContext context) { base.Enter(context); context.Movement.Stop(); context.LastNapTime = Time.time; }
             public override void Tick(PetContext context, float deltaTime) => context.State.AddEnergy(context.Tuning.napEnergyRecoveryPerMinute * deltaTime / 60f);
             public override bool IsComplete(PetContext context) => context.State.Energy >= context.Tuning.napExitEnergy;
         }
@@ -234,7 +248,7 @@ namespace DesktopPet.Pet.Behavior
             }
             public override void Tick(PetContext context, float deltaTime)
             {
-                if (!context.Movement.IsMoving && float.IsPositiveInfinity(lingerUntil)) lingerUntil = Time.time + 4f;
+                if (!context.Movement.IsMoving && float.IsPositiveInfinity(lingerUntil)) lingerUntil = Time.time + context.Tuning.approachLingerDuration;
             }
             public override bool IsComplete(PetContext context) => Time.time >= lingerUntil;
             public override void Exit(PetContext context) => context.Movement.Stop();

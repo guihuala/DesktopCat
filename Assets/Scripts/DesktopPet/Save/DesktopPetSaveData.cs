@@ -6,7 +6,7 @@ namespace DesktopPet.Save
     [Serializable]
     public class DesktopPetSaveData
     {
-        public int saveVersion = 3;
+        public int saveVersion = 4;
         public WindowSettingsData window = new WindowSettingsData();
         public PetSettingsData pet = new PetSettingsData();
         public AudioSettingsData audio = new AudioSettingsData();

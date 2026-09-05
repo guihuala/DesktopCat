@@ -16,12 +16,20 @@ namespace DesktopPet.Editor
         private static readonly Color Text = new Color(0.94f, 0.95f, 0.97f, 1f);
         private static readonly Color Muted = new Color(0.68f, 0.72f, 0.78f, 1f);
 
-        static FurniturePlacementPanelPrefabBuilder() => EditorApplication.delayCall += EnsureV2;
-
-        private static void EnsureV2()
+        static FurniturePlacementPanelPrefabBuilder()
         {
+            EditorApplication.delayCall += EnsureV3;
+            EditorApplication.playModeStateChanged += state =>
+            {
+                if (state == PlayModeStateChange.EnteredEditMode) EditorApplication.delayCall += EnsureV3;
+            };
+        }
+
+        private static void EnsureV3()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode) return;
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path);
-            if (prefab == null || prefab.transform.Find("LayoutV2") == null) Rebuild();
+            if (prefab == null || prefab.transform.Find("LayoutV3") == null) Rebuild();
         }
 
         [MenuItem("Desktop Pet/重建家具摆放面板 Prefab")]
@@ -38,7 +46,7 @@ namespace DesktopPet.Editor
             Rect(root, -18, -18, 520, 650, Vector2.one);
             var panel = root.AddComponent<FurniturePlacementPanel>();
             root.AddComponent<UIDraggablePanel>();
-            var marker = new GameObject("LayoutV2");
+            var marker = new GameObject("LayoutV3");
             marker.transform.SetParent(root.transform, false);
 
             Rect(Label("布置房间", root.transform, 25, Text, true), 24, -16, 330, 40);
@@ -62,7 +70,8 @@ namespace DesktopPet.Editor
             Rect(Label("③ 确认摆放", root.transform, 15, Muted), 24, -456, 200, 26);
             var message = Label(string.Empty, root.transform, 15, Accent); Rect(message, 170, -454, 326, 28);
             var place = Button("摆放", root.transform, Accent); Rect(place, 24, -494, 472, 50);
-            var remove = Button("收回当前家具", root.transform, Card); Rect(remove, 24, -556, 472, 42);
+            var remove = Button("收回当前家具", root.transform, Card); Rect(remove, 24, -556, 226, 42);
+            var exchange = Button("兑换重复家具", root.transform, Card); Rect(exchange, 270, -556, 226, 42);
             Rect(Label("彩色几何体是原型家具，正式模型可直接替换 prefab。", root.transform, 13, Muted, false, TextAnchor.MiddleCenter), 24, -610, 472, 22);
 
             var so = new SerializedObject(panel);
@@ -75,6 +84,7 @@ namespace DesktopPet.Editor
             Assign(so, "previousButton", previous.GetComponent<Button>()); Assign(so, "nextButton", next.GetComponent<Button>());
             Assign(so, "placeButton", place.GetComponent<Button>()); Assign(so, "placeButtonText", place.GetComponentInChildren<Text>());
             Assign(so, "removeButton", remove.GetComponent<Button>());
+            Assign(so, "exchangeButton", exchange.GetComponent<Button>());
             so.ApplyModifiedPropertiesWithoutUndo();
             PrefabUtility.SaveAsPrefabAsset(root, Path);
             Object.DestroyImmediate(root);

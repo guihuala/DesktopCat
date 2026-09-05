@@ -27,6 +27,7 @@ namespace DesktopPet.UI
         [SerializeField] private Button placeButton;
         [SerializeField] private Text placeButtonText;
         [SerializeField] private Button removeButton;
+        [SerializeField] private Button exchangeButton;
 
         private readonly List<FurnitureDefinition> candidates = new List<FurnitureDefinition>();
         private FurnitureCatalog catalog;
@@ -35,10 +36,12 @@ namespace DesktopPet.UI
         private FurnitureAnchorType selectedAnchor = FurnitureAnchorType.CatBed;
         private int selectedIndex;
         private Action closeRequested;
+        private Action exchangeRequested;
 
-        public void Initialize(Action onCloseRequested)
+        public void Initialize(Action onCloseRequested, Action onExchangeRequested = null)
         {
             closeRequested = onCloseRequested;
+            exchangeRequested = onExchangeRequested;
             catalog = Resources.Load<FurnitureCatalog>("Config/FurnitureCatalog");
             inventory = FindObjectOfType<FurnitureInventory>();
             placement = FindObjectOfType<FurniturePlacementController>();
@@ -52,6 +55,7 @@ namespace DesktopPet.UI
             Bind(nextButton, () => Cycle(1));
             Bind(placeButton, PlaceSelected);
             Bind(removeButton, RemoveCurrent);
+            Bind(exchangeButton, RequestExchange);
             ApplyFont();
             SelectAnchor(selectedAnchor);
         }
@@ -146,6 +150,12 @@ namespace DesktopPet.UI
             else Close();
         }
 
+        private void RequestExchange()
+        {
+            RequestClose();
+            exchangeRequested?.Invoke();
+        }
+
         private void RefreshAnchorButtons()
         {
             SetAnchorButtonState(catBedButton, FurnitureAnchorType.CatBed);
@@ -165,6 +175,7 @@ namespace DesktopPet.UI
 
         private static void Bind(Button button, UnityEngine.Events.UnityAction action)
         {
+            if (button == null) return;
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(action);
         }

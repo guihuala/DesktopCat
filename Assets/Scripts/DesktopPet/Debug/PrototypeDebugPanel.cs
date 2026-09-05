@@ -137,7 +137,7 @@ namespace DesktopPet
             behaviourText.text = $"猫咪正在：{BehaviourName(brain.CurrentBehaviourId)}";
             var moving = movement != null && movement.IsMoving ? "正在移动" : "没有移动";
             var locked = state.IsUninterruptible ? "暂时不能打断" : "可以切换状态";
-            detailText.text = $"已持续 {brain.CurrentBehaviourDuration:0} 秒 · {moving}\n{locked} · 鼠标状态：{ActivityName(brain.ActivityLevel.ToString())}";
+            detailText.text = $"已持续 {brain.CurrentBehaviourDuration:0} 秒 · {moving} · {locked}\n{brain.GetObservationSummary()} · 鼠标：{ActivityName(brain.ActivityLevel.ToString())}";
             energyText.text = $"精力  {state.Energy:0} / 100";
             hungerText.text = $"饥饿  {state.Hunger:0} / 100";
             energySlider.SetValueWithoutNotify(state.Energy);

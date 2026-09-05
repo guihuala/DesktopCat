@@ -35,6 +35,7 @@ namespace DesktopPet
         [SerializeField] private SettingsPanel settingsPanelPrefab;
         [SerializeField] private RewardClaimPanel rewardClaimPanelPrefab;
         [SerializeField] private FurniturePlacementPanel furniturePlacementPanelPrefab;
+        [SerializeField] private FurnitureExchangePanel furnitureExchangePanelPrefab;
         [SerializeField] private PetAppearancePanel petAppearancePanelPrefab;
         [SerializeField] private KeyCode closeTopPanelKey = KeyCode.Escape;
 
@@ -44,6 +45,7 @@ namespace DesktopPet
         private SettingsPanel settingsPanel;
         private RewardClaimPanel rewardClaimPanel;
         private FurniturePlacementPanel furniturePlacementPanel;
+        private FurnitureExchangePanel furnitureExchangePanel;
         private PetAppearancePanel petAppearancePanel;
         private bool clickThroughBeforePanel;
         private bool isManagingClickThrough;
@@ -96,6 +98,7 @@ namespace DesktopPet
             CreateSettingsPanel();
             CreateRewardClaimPanel();
             CreateFurniturePlacementPanel();
+            CreateFurnitureExchangePanel();
             CreatePetAppearancePanel();
         }
 
@@ -203,6 +206,13 @@ namespace DesktopPet
             TogglePanel("furniture-placement");
         }
 
+        public void ToggleFurnitureExchangePanel()
+        {
+            if (!panels.ContainsKey("furniture-exchange")) CreateFurnitureExchangePanel();
+            if (!panels.ContainsKey("furniture-exchange")) return;
+            TogglePanel("furniture-exchange");
+        }
+
         private void CreateConfiguredPanels()
         {
             if (panelPrefabs == null)
@@ -275,7 +285,22 @@ namespace DesktopPet
             }
             furniturePlacementPanel = Instantiate(furniturePlacementPanelPrefab, panelRoot, false);
             RegisterPanel("furniture-placement", furniturePlacementPanel);
-            furniturePlacementPanel.Initialize(() => ClosePanel("furniture-placement"));
+            furniturePlacementPanel.Initialize(() => ClosePanel("furniture-placement"), ToggleFurnitureExchangePanel);
+        }
+
+        private void CreateFurnitureExchangePanel()
+        {
+            if (furnitureExchangePanelPrefab == null)
+                furnitureExchangePanelPrefab = Resources.Load<FurnitureExchangePanel>("UI/FurnitureExchangePanel");
+            if (furnitureExchangePanelPrefab == null)
+            {
+                Debug.LogWarning("UIManager needs a furniture exchange panel prefab.");
+                return;
+            }
+            if (furnitureExchangePanel != null) return;
+            furnitureExchangePanel = Instantiate(furnitureExchangePanelPrefab, panelRoot, false);
+            RegisterPanel("furniture-exchange", furnitureExchangePanel);
+            furnitureExchangePanel.Initialize(() => ClosePanel("furniture-exchange"), ToggleFurniturePlacementPanel);
         }
 
         private void CreatePetAppearancePanel()
@@ -290,9 +315,17 @@ namespace DesktopPet
             petAppearancePanel = Instantiate(petAppearancePanelPrefab, panelRoot, false);
             RegisterPanel("pet-appearance", petAppearancePanel);
             petAppearancePanel.Initialize(petRoot != null ? petRoot.GetComponent<PetAppearanceController>() : null,
-                () => ClosePanel("pet-appearance"));
+                CompletePetSelection);
             if (SaveManager.Data == null || SaveManager.Data.appearance == null || !SaveManager.Data.appearance.hasChosenPet)
                 OpenPanel("pet-appearance");
+        }
+
+        private void CompletePetSelection()
+        {
+            var bootstrap = FindObjectOfType<DesktopPetBootstrap>();
+            if (bootstrap != null) bootstrap.StartPetGameplay();
+            else Debug.LogError("找不到桌宠启动服务，猫咪玩法未能启动。", this);
+            ClosePanel("pet-appearance");
         }
 
         private void RegisterPanel(string panelId, UIPanel panel)

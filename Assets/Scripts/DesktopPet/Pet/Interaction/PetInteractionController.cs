@@ -1,6 +1,7 @@
 using DesktopPet.Config;
 using DesktopPet.Events;
 using DesktopPet.Pet.Behavior;
+using DesktopPet.Save;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -14,6 +15,9 @@ namespace DesktopPet.Pet.Interaction
         private float nextClickTime;
         private AudioSource audioSource;
         private AudioClip callClip;
+        private float nextCallSoundTime;
+        private const float CallSoundCooldown = 0.8f;
+        private const float SafeCallVolume = 0.35f;
         private bool petPressed;
         private Vector2 pressPosition;
         private const float ClickDragThreshold = 8f;
@@ -25,6 +29,8 @@ namespace DesktopPet.Pet.Interaction
             windowController = FindObjectOfType<WindowController>();
             audioSource = GetComponent<AudioSource>();
             if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            audioSource.loop = false;
             EnsureCollider();
         }
 
@@ -62,6 +68,8 @@ namespace DesktopPet.Pet.Interaction
 
         private void PlayCallSound()
         {
+            if (Time.unscaledTime < nextCallSoundTime || audioSource == null) return;
+            nextCallSoundTime = Time.unscaledTime + CallSoundCooldown;
             if (callClip == null)
             {
                 const int sampleRate = 22050;
@@ -75,7 +83,11 @@ namespace DesktopPet.Pet.Interaction
                 callClip = AudioClip.Create("DefaultPetCall", sampleCount, 1, sampleRate, false);
                 callClip.SetData(samples, 0);
             }
-            audioSource.PlayOneShot(callClip);
+            var savedAudio = SaveManager.Data != null ? SaveManager.Data.audio : null;
+            var master = savedAudio != null ? Mathf.Clamp01(savedAudio.masterVolume) : 1f;
+            var sfx = savedAudio != null ? Mathf.Clamp01(savedAudio.sfxVolume) : 1f;
+            audioSource.Stop();
+            audioSource.PlayOneShot(callClip, SafeCallVolume * master * sfx);
         }
 
         private void EnsureCollider()

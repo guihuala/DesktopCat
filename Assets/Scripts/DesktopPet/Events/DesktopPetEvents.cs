@@ -122,11 +122,23 @@ namespace DesktopPet.Events
         { BehaviourId = behaviourId; IsUninterruptible = isUninterruptible; }
     }
 
+    public enum FeedbackPriority { Ambient = 0, Normal = 1, Important = 2 }
+
     public readonly struct PetFeedbackEvent : IGameEvent
     {
         public readonly string Message;
         public readonly bool Positive;
-        public PetFeedbackEvent(string message, bool positive) { Message = message; Positive = positive; }
+        public readonly FeedbackPriority Priority;
+        public readonly float Duration;
+
+        public PetFeedbackEvent(string message, bool positive,
+            FeedbackPriority priority = FeedbackPriority.Normal, float duration = 2.5f)
+        {
+            Message = message;
+            Positive = positive;
+            Priority = priority;
+            Duration = duration;
+        }
     }
 
     public readonly struct PlayerActivityChangedEvent : IGameEvent

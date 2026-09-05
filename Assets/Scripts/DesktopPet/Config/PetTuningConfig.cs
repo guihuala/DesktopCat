@@ -11,6 +11,7 @@ namespace DesktopPet.Config
 
         [Header("Stat rates per real-time minute")]
         [Min(0f)] public float hungerGainPerMinute = 1.5f;
+        [Min(0f)] public float awakeEnergyCostPerMinute = 4f;
         [Min(0f)] public float wanderEnergyCostPerMinute = 2f;
         [Min(0f)] public float napEnergyRecoveryPerMinute = 8f;
         [Min(0f)] public float sleepEnergyRecoveryPerMinute = 18f;
@@ -22,6 +23,10 @@ namespace DesktopPet.Config
         [Range(0f, 100f)] public float sleepExitEnergy = 85f;
         [Min(0.1f)] public float decisionInterval = 2f;
         [Min(0f)] public float minimumBehaviourDuration = 4f;
+        [Min(1f)] public float idleDurationMin = 5f;
+        [Min(1f)] public float idleDurationMax = 10f;
+        [Min(0f)] public float napCooldown = 720f;
+        [Min(0f)] public float approachLingerDuration = 3f;
 
         [Header("Movement")]
         [Min(0.01f)] public float walkSpeed = 0.65f;
@@ -56,6 +61,7 @@ namespace DesktopPet.Config
             napEnterEnergy = Mathf.Max(sleepEnterEnergy, napEnterEnergy);
             napExitEnergy = Mathf.Max(napEnterEnergy, napExitEnergy);
             sleepExitEnergy = Mathf.Max(napExitEnergy, sleepExitEnergy);
+            idleDurationMax = Mathf.Max(idleDurationMin, idleDurationMax);
         }
     }
 }

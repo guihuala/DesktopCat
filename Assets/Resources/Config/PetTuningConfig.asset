@@ -15,15 +15,20 @@ MonoBehaviour:
   initialEnergy: 80
   initialHunger: 15
   hungerGainPerMinute: 1
-  wanderEnergyCostPerMinute: 4
+  awakeEnergyCostPerMinute: 4
+  wanderEnergyCostPerMinute: 2
   napEnergyRecoveryPerMinute: 10
   sleepEnergyRecoveryPerMinute: 20
   napEnterEnergy: 45
-  napExitEnergy: 65
+  napExitEnergy: 55
   sleepEnterEnergy: 18
   sleepExitEnergy: 80
   decisionInterval: 3
   minimumBehaviourDuration: 6
+  idleDurationMin: 5
+  idleDurationMax: 10
+  napCooldown: 720
+  approachLingerDuration: 3
   walkSpeed: 0.65
   turnSpeed: 360
   arrivalDistance: 0.08
@@ -38,6 +43,6 @@ MonoBehaviour:
   eatingExitHunger: 10
   callResponseChance: 0.75
   sleepingCallResponseChance: 0.1
-  approachCooldown: 60
-  activeApproachBonus: 1.25
-  normalApproachBonus: 0.15
+  approachCooldown: 180
+  activeApproachBonus: 0.35
+  normalApproachBonus: 0.05
